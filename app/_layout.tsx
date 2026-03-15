@@ -6,6 +6,10 @@ export default function RootLayout() {
     <PaperProvider>
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="signup"
+          options={{ title: "Sign Up", headerBackVisible: false }}
+        />
       </Stack>
     </PaperProvider>
   );

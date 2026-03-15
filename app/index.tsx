@@ -1,29 +1,33 @@
+import { useRouter } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 import { Button } from "react-native-paper";
 
+import ScreenContainer from "@/components/ui/screenContainer";
+
 export default function Index() {
+  const router = useRouter();
   return (
-    <View style={styles.container}>
+    <ScreenContainer>
       <View style={styles.logoContainer}>
         <Text>Safe Home</Text>
       </View>
       <View style={styles.buttonContainer}>
-        <Button style={styles.button} mode="contained">
+        <Button
+          style={styles.button}
+          mode="contained"
+          onPress={() => router.push("/signup")}
+        >
           Sign up
         </Button>
         <Button style={styles.button} mode="outlined">
           Log in
         </Button>
       </View>
-    </View>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
   logoContainer: {
     flex: 1,
     justifyContent: "center",
