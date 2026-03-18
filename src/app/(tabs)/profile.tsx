@@ -1,14 +1,16 @@
-import { View } from "react-native";
-import { Text } from "react-native-paper";
+import { Button } from "react-native-paper";
 
 import ScreenContainer from "@/components/ui/screenContainer";
+import { useSession } from "@/ctx";
 
 export default function ProfileScreen() {
+  const { signOut } = useSession();
+
   return (
     <ScreenContainer>
-      <View>
-        <Text>Profile</Text>
-      </View>
+      <Button mode="contained" onPress={signOut}>
+        Sign Out
+      </Button>
     </ScreenContainer>
   );
 }
