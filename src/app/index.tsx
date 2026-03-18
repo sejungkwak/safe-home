@@ -19,8 +19,12 @@ export default function Index() {
         >
           Sign up
         </Button>
-        <Button style={styles.button} mode="outlined">
-          Log in
+        <Button
+          style={styles.button}
+          mode="outlined"
+          onPress={() => router.push("/signin")}
+        >
+          Sign in
         </Button>
       </View>
     </ScreenContainer>

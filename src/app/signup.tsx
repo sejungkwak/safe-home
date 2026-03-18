@@ -18,7 +18,7 @@ import { supabase } from "../lib/supabase";
 
 import GoogleIcon from "@/components/ui/googleIcon";
 import ScreenContainer from "@/components/ui/screenContainer";
-import { signupData, signupSchema } from "@/lib/schemas/signup";
+import { signupData, signupSchema } from "@/schemas/signup";
 
 function SignUpScreen() {
   // Initialise React hook form with Zod validation
@@ -235,8 +235,8 @@ function SignUpScreen() {
 
       <View style={styles.textContainer}>
         <Text variant="bodyLarge">Already have an account?</Text>
-        <Link href="/">
-          <Text variant="bodyLarge">Log in</Text>
+        <Link href="/signin">
+          <Text variant="bodyLarge">Sign in</Text>
         </Link>
       </View>
     </ScreenContainer>
