@@ -5,9 +5,9 @@ import { Controller, useForm } from "react-hook-form";
 import { Alert, StyleSheet, View } from "react-native";
 import { Button, HelperText, Text, TextInput } from "react-native-paper";
 
-import ScreenContainer from "@/components/ui/screenContainer";
+import ScreenContainer from "@/components/ui/screen-container";
 import { supabase } from "@/lib/supabase";
-import { signinData, signinSchema } from "@/schemas/signin";
+import { signinData, signinSchema } from "@/schemas/sign-in";
 
 function SigninScreen() {
   // Initialise React hook form
@@ -86,7 +86,7 @@ function SigninScreen() {
 
       <View style={styles.textContainer}>
         <Text variant="bodyLarge">Don&apos;t have an account?</Text>
-        <Link href="/signup">
+        <Link href="/sign-up">
           <Text variant="bodyLarge">Sign up</Text>
         </Link>
       </View>

@@ -28,11 +28,11 @@ function RootStack() {
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen
-        name="signup"
+        name="sign-up"
         options={{ title: "Sign Up", headerBackVisible: false }}
       />
       <Stack.Screen
-        name="signin"
+        name="sign-in"
         options={{ title: "Sign In", headerBackVisible: false }}
       />
       <Stack.Protected guard={!!session}>

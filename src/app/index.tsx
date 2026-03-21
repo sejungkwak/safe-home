@@ -2,7 +2,7 @@ import { useRouter } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 import { Button } from "react-native-paper";
 
-import ScreenContainer from "@/components/ui/screenContainer";
+import ScreenContainer from "@/components/ui/screen-container";
 
 export default function Index() {
   const router = useRouter();
@@ -15,14 +15,14 @@ export default function Index() {
         <Button
           style={styles.button}
           mode="contained"
-          onPress={() => router.push("/signup")}
+          onPress={() => router.push("/sign-up")}
         >
           Sign up
         </Button>
         <Button
           style={styles.button}
           mode="outlined"
-          onPress={() => router.push("/signin")}
+          onPress={() => router.push("/sign-in")}
         >
           Sign in
         </Button>

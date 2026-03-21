@@ -1,6 +1,6 @@
 import { Button } from "react-native-paper";
 
-import ScreenContainer from "@/components/ui/screenContainer";
+import ScreenContainer from "@/components/ui/screen-container";
 import { useSession } from "@/ctx";
 
 export default function ProfileScreen() {

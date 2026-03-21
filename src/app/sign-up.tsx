@@ -16,9 +16,9 @@ import {
 } from "react-native-paper";
 import { supabase } from "../lib/supabase";
 
-import GoogleIcon from "@/components/ui/googleIcon";
-import ScreenContainer from "@/components/ui/screenContainer";
-import { signupData, signupSchema } from "@/schemas/signup";
+import GoogleIcon from "@/components/ui/google-icon";
+import ScreenContainer from "@/components/ui/screen-container";
+import { signupData, signupSchema } from "@/schemas/sign-up";
 
 function SignUpScreen() {
   // Initialise React hook form with Zod validation
@@ -235,7 +235,7 @@ function SignUpScreen() {
 
       <View style={styles.textContainer}>
         <Text variant="bodyLarge">Already have an account?</Text>
-        <Link href="/signin">
+        <Link href="/sign-in">
           <Text variant="bodyLarge">Sign in</Text>
         </Link>
       </View>
