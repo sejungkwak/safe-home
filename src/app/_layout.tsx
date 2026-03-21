@@ -26,15 +26,18 @@ function RootStack() {
 
   return (
     <Stack>
-      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="index"
+        options={{ title: "Sign In", headerBackVisible: false }}
+      />
       <Stack.Screen
         name="sign-up"
         options={{ title: "Sign Up", headerBackVisible: false }}
       />
-      <Stack.Screen
+      {/* <Stack.Screen
         name="sign-in"
         options={{ title: "Sign In", headerBackVisible: false }}
-      />
+      /> */}
       <Stack.Protected guard={!!session}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack.Protected>
