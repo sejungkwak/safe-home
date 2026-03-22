@@ -26,7 +26,7 @@ function InitialLayout() {
 
     if (session && !inTabsGroup) {
       // redirect authenticated users to the home screen
-      // TODO: home screen
+      router.replace("/(tabs)/home");
     } else if (!session) {
       // redirect unauthenticated users to the sign in screen
       router.replace("/");
@@ -41,15 +41,6 @@ function InitialLayout() {
 }
 
 function RootStack() {
-  const { session } = useSession();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (session) {
-      router.replace("/(tabs)/profile");
-    }
-  }, [session, router]);
-
   return (
     <Stack>
       <Stack.Screen
