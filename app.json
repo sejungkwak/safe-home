@@ -39,6 +39,21 @@
           }
         }
       ],
+      [
+        // Code taken from https://docs.expo.dev/versions/latest/sdk/imagepicker/
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you upload them.",
+          "colors": {
+            "cropToolbarColor": "#000000"
+          },
+          "dark": {
+            "colors": {
+              "cropToolbarColor": "#000000"
+            }
+          }
+        }
+      ],
       "expo-secure-store",
       "expo-sqlite"
     ],

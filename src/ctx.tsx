@@ -1,4 +1,4 @@
-import { Session } from "@supabase/supabase-js";
+import { Session, User } from "@supabase/supabase-js";
 import {
   createContext,
   useContext,
@@ -10,17 +10,19 @@ import { supabase } from "./lib/supabase";
 
 // The code is modified based on the following resources:
 // https://docs.expo.dev/router/advanced/authentication-rewrites/#using-react-context-and-route-groups
+// https://supabase.com/blog/react-native-storage
 // https://medium.com/@kumarankitraj1478/supabase-authentication-c81df4d74d5d
 
 // Define data types to share
-interface AuthContextType {
+type AuthProps = {
   signIn: (email: string, password: string) => Promise<string | null>;
   signOut: () => Promise<void>;
+  user: User | null;
   session: Session | null;
-  isLoading: boolean;
-}
+  initialised?: boolean;
+};
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<Partial<AuthProps>>({});
 
 // This hook can be used to access the user info.
 export function useSession() {
@@ -33,8 +35,9 @@ export function useSession() {
 }
 
 export function SessionProvider({ children }: PropsWithChildren) {
+  const [user, setUser] = useState<User | null>();
   const [session, setSession] = useState<Session | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [initialised, setInitialised] = useState(false);
 
   useEffect(() => {
     // Restore existing session
@@ -42,8 +45,9 @@ export function SessionProvider({ children }: PropsWithChildren) {
       const {
         data: { session },
       } = await supabase.auth.getSession();
+      setUser(session?.user);
       setSession(session);
-      setIsLoading(false);
+      setInitialised(true);
     };
     initSession();
 
@@ -51,7 +55,9 @@ export function SessionProvider({ children }: PropsWithChildren) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session ? session.user : null);
       setSession(session);
+      setInitialised(true);
     });
 
     return () => subscription.unsubscribe();
@@ -75,7 +81,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
         signIn,
         signOut,
         session,
-        isLoading,
+        initialised,
       }}
     >
       {children}
