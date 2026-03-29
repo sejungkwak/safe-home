@@ -1,11 +1,12 @@
 import ScreenContainer from "@/components/ui/screen-container";
-import { Text, View } from "react-native";
+import ScreenTitle from "@/components/ui/screen-title";
+import { View } from "react-native";
 
 function TripsScreen() {
   return (
     <ScreenContainer>
       <View>
-        <Text>Trips</Text>
+        <ScreenTitle>Trips</ScreenTitle>
       </View>
     </ScreenContainer>
   );

@@ -55,11 +55,19 @@ function RootStack() {
     <Stack>
       <Stack.Screen
         name="index"
-        options={{ title: "Sign In", headerBackVisible: false }}
+        options={{
+          title: "Sign In",
+          headerBackVisible: false,
+          headerShown: false,
+        }}
       />
       <Stack.Screen
         name="sign-up"
-        options={{ title: "Sign Up", headerBackVisible: false }}
+        options={{
+          title: "Sign Up",
+          headerBackVisible: false,
+          headerShown: false,
+        }}
       />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
     </Stack>

@@ -23,6 +23,7 @@ import GoogleIcon from "@/components/ui/google-icon";
 import InputField from "@/components/ui/input-field";
 import PrimaryButton from "@/components/ui/primary-button";
 import ScreenContainer from "@/components/ui/screen-container";
+import ScreenTitle from "@/components/ui/screen-title";
 import { signupData, signupSchema } from "@/schemas/sign-up";
 
 function SignUpScreen() {
@@ -218,6 +219,7 @@ function SignUpScreen() {
   return (
     <ScreenContainer>
       <ScrollView>
+        <ScreenTitle>Sign Up</ScreenTitle>
         <View className="mb-4">
           <RadioButton.Group
             onValueChange={(value) => setUserType(value)}
@@ -468,7 +470,12 @@ function SignUpScreen() {
         <View className="flex-row justify-center gap-2 mt-8">
           <Text variant="bodyLarge">Already have an account?</Text>
           <Link href="/">
-            <Text variant="bodyLarge">Sign in</Text>
+            <Text
+              variant="bodyLarge"
+              theme={{ colors: { onSurface: colors.primary } }}
+            >
+              Sign in
+            </Text>
           </Link>
         </View>
       </ScrollView>

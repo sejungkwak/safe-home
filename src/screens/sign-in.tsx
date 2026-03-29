@@ -3,15 +3,18 @@ import { Link } from "expo-router";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Alert, View } from "react-native";
-import { HelperText, Text } from "react-native-paper";
+import { HelperText, Text, useTheme } from "react-native-paper";
 
 import InputField from "@/components/ui/input-field";
 import PrimaryButton from "@/components/ui/primary-button";
 import ScreenContainer from "@/components/ui/screen-container";
+import ScreenTitle from "@/components/ui/screen-title";
 import { supabase } from "@/lib/supabase";
 import { signinData, signinSchema } from "@/schemas/sign-in";
 
 function SigninScreen() {
+  const { colors } = useTheme();
+
   // Initialise React hook form
   const {
     handleSubmit,
@@ -34,6 +37,7 @@ function SigninScreen() {
 
   return (
     <ScreenContainer>
+      <ScreenTitle>Sign In</ScreenTitle>
       <View>
         <Controller
           control={control}
@@ -89,7 +93,12 @@ function SigninScreen() {
       <View className="flex-row justify-center gap-2 mt-8">
         <Text variant="bodyLarge">Don&apos;t have an account?</Text>
         <Link href="/sign-up">
-          <Text variant="bodyLarge">Sign up</Text>
+          <Text
+            variant="bodyLarge"
+            theme={{ colors: { onSurface: colors.primary } }}
+          >
+            Sign up
+          </Text>
         </Link>
       </View>
     </ScreenContainer>

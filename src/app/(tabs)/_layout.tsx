@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { BottomNavigation } from "react-native-paper";
 
+import AccountScreen from "./account";
 import HomeScreen from "./home";
-import ProfileScreen from "./profile";
 import TripsScreen from "./trips";
 
 // https://oss.callstack.com/react-native-paper/docs/components/BottomNavigation/
@@ -24,8 +24,8 @@ export default function TabLayout() {
       unfocusedIcon: "list-box-outline",
     },
     {
-      key: "profile",
-      title: "Profile",
+      key: "account",
+      title: "Account",
       focusedIcon: "account-circle",
       unfocusedIcon: "account-circle-outline",
     },
@@ -34,7 +34,7 @@ export default function TabLayout() {
   const renderScene = BottomNavigation.SceneMap({
     home: HomeScreen,
     trips: TripsScreen,
-    profile: ProfileScreen,
+    account: AccountScreen,
   });
 
   return (
