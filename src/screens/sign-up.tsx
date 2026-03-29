@@ -3,7 +3,7 @@ import * as ImagePicker from "expo-image-picker";
 import { Link } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Alert, ScrollView, StyleSheet, View } from "react-native";
+import { Alert, ScrollView, useColorScheme, View } from "react-native";
 import PhoneInput, {
   ICountry,
   isValidPhoneNumber,
@@ -16,6 +16,7 @@ import {
   RadioButton,
   Text,
   TextInput,
+  useTheme,
 } from "react-native-paper";
 import { supabase } from "../lib/supabase";
 
@@ -27,6 +28,9 @@ function SignUpScreen() {
   const [userType, setUserType] = useState("rider");
   const [drivingLicence, setDrivingLicence] = useState<string | null>(null);
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+
+  const { colors } = useTheme();
+  const colorScheme = useColorScheme();
 
   // Initialise React hook form with Zod validation
   const {
@@ -213,12 +217,12 @@ function SignUpScreen() {
   return (
     <ScreenContainer>
       <ScrollView>
-        <View style={styles.formContainer}>
+        <View className="mb-4">
           <RadioButton.Group
             onValueChange={(value) => setUserType(value)}
             value={userType}
           >
-            <View style={styles.rbContainer}>
+            <View className="flex-row">
               <RadioButton.Item
                 label="Rider"
                 value="rider"
@@ -274,6 +278,13 @@ function SignUpScreen() {
                     onChangePhoneNumber={onChange}
                     selectedCountry={selectedCountry}
                     onChangeSelectedCountry={handleSelectedCountry}
+                    theme={colorScheme === "dark" ? "dark" : "light"}
+                    phoneInputStyles={{
+                      container: { backgroundColor: colors.background },
+                      flagContainer: { backgroundColor: colors.background },
+                      caret: { color: colors.onBackground },
+                      callingCode: { color: colors.onBackground },
+                    }}
                   />
                   <HelperText
                     type="error"
@@ -329,9 +340,7 @@ function SignUpScreen() {
                     type="info"
                     visible={!errors.password}
                     padding="none"
-                    style={[
-                      !errors.password ? styles.expanded : styles.collapsed,
-                    ]}
+                    className={!errors.password ? "flex" : "hidden"}
                   >
                     Password must be at least 6 characters.
                   </HelperText>
@@ -339,9 +348,7 @@ function SignUpScreen() {
                     type="error"
                     visible={!!errors.password}
                     padding="none"
-                    style={[
-                      !!errors.password ? styles.expanded : styles.collapsed,
-                    ]}
+                    className={!!errors.password ? "flex" : "hidden"}
                   >
                     {errors.password?.message}
                   </HelperText>
@@ -442,16 +449,22 @@ function SignUpScreen() {
             Sign Up
           </Button>
         </View>
-        <View style={styles.dividerContainer}>
-          <Divider style={styles.divider} />
+        <View className="flex-row items-center gap-2 my-4">
+          <Divider
+            className="flex-1"
+            style={{ backgroundColor: colors.onBackground }}
+          />
           <Text>or</Text>
-          <Divider style={styles.divider} />
+          <Divider
+            className="flex-1"
+            style={{ backgroundColor: colors.onBackground }}
+          />
         </View>
         <Button mode="outlined" icon={() => <GoogleIcon size={20} />}>
           Sign in with Google
         </Button>
 
-        <View style={styles.textContainer}>
+        <View className="flex-row justify-center gap-2 mt-8">
           <Text variant="bodyLarge">Already have an account?</Text>
           <Link href="/">
             <Text variant="bodyLarge">Sign in</Text>
@@ -463,33 +476,3 @@ function SignUpScreen() {
 }
 
 export default SignUpScreen;
-
-const styles = StyleSheet.create({
-  formContainer: {
-    marginBottom: 16,
-  },
-  rbContainer: {
-    flexDirection: "row",
-  },
-  expanded: {
-    display: "flex",
-  },
-  collapsed: {
-    display: "none",
-  },
-  dividerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginVertical: 16,
-  },
-  divider: {
-    flex: 1,
-  },
-  textContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 8,
-    marginTop: 32,
-  },
-});

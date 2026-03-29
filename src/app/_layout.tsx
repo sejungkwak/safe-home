@@ -1,8 +1,11 @@
 import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect } from "react";
-import { PaperProvider } from "react-native-paper";
+import { useColorScheme } from "react-native";
+import { MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper";
 
+import { Colors } from "@/constants/theme";
 import { SessionProvider, useSession } from "@/ctx";
+import "../../global.css";
 
 export default function RootLayout() {
   return (
@@ -17,6 +20,13 @@ function InitialLayout() {
   const { session, initialised } = useSession();
   const segments = useSegments();
   const router = useRouter();
+
+  const colorScheme = useColorScheme();
+
+  const paperTheme =
+    colorScheme === "dark"
+      ? { ...MD3DarkTheme, colors: Colors.dark }
+      : { ...MD3LightTheme, colors: Colors.light };
 
   useEffect(() => {
     if (!initialised) return;
@@ -34,7 +44,7 @@ function InitialLayout() {
   }, [session, initialised]);
 
   return (
-    <PaperProvider>
+    <PaperProvider theme={paperTheme}>
       <RootStack />
     </PaperProvider>
   );

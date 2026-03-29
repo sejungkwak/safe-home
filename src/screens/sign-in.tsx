@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "expo-router";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Alert, StyleSheet, View } from "react-native";
+import { Alert, View } from "react-native";
 import { Button, HelperText, Text, TextInput } from "react-native-paper";
 
 import ScreenContainer from "@/components/ui/screen-container";
@@ -84,7 +84,7 @@ function SigninScreen() {
         Sign In
       </Button>
 
-      <View style={styles.textContainer}>
+      <View className="flex-row justify-center gap-2 mt-8">
         <Text variant="bodyLarge">Don&apos;t have an account?</Text>
         <Link href="/sign-up">
           <Text variant="bodyLarge">Sign up</Text>
@@ -95,12 +95,3 @@ function SigninScreen() {
 }
 
 export default SigninScreen;
-
-const styles = StyleSheet.create({
-  textContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 8,
-    marginTop: 32,
-  },
-});
