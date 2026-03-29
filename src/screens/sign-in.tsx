@@ -3,8 +3,10 @@ import { Link } from "expo-router";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Alert, View } from "react-native";
-import { Button, HelperText, Text, TextInput } from "react-native-paper";
+import { HelperText, Text } from "react-native-paper";
 
+import InputField from "@/components/ui/input-field";
+import PrimaryButton from "@/components/ui/primary-button";
 import ScreenContainer from "@/components/ui/screen-container";
 import { supabase } from "@/lib/supabase";
 import { signinData, signinSchema } from "@/schemas/sign-in";
@@ -38,7 +40,7 @@ function SigninScreen() {
           name="email"
           render={({ field: { onChange, onBlur, value } }) => (
             <View>
-              <TextInput
+              <InputField
                 label="Email Address"
                 mode="outlined"
                 keyboardType="email-address"
@@ -59,7 +61,7 @@ function SigninScreen() {
           control={control}
           render={({ field: { onChange, onBlur, value } }) => (
             <View>
-              <TextInput
+              <InputField
                 label="Password"
                 mode="outlined"
                 autoCapitalize="none"
@@ -80,9 +82,9 @@ function SigninScreen() {
           )}
         />
       </View>
-      <Button mode="contained" onPress={handleSubmit(onSubmit)}>
+      <PrimaryButton mode="contained" onPress={handleSubmit(onSubmit)}>
         Sign In
-      </Button>
+      </PrimaryButton>
 
       <View className="flex-row justify-center gap-2 mt-8">
         <Text variant="bodyLarge">Don&apos;t have an account?</Text>

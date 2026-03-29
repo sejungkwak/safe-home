@@ -15,12 +15,13 @@ import {
   HelperText,
   RadioButton,
   Text,
-  TextInput,
   useTheme,
 } from "react-native-paper";
 import { supabase } from "../lib/supabase";
 
 import GoogleIcon from "@/components/ui/google-icon";
+import InputField from "@/components/ui/input-field";
+import PrimaryButton from "@/components/ui/primary-button";
 import ScreenContainer from "@/components/ui/screen-container";
 import { signupData, signupSchema } from "@/schemas/sign-up";
 
@@ -249,7 +250,7 @@ function SignUpScreen() {
               control={control}
               render={({ field: { onChange, onBlur, value } }) => (
                 <View>
-                  <TextInput
+                  <InputField
                     label="Name"
                     mode="outlined"
                     onChangeText={onChange}
@@ -301,7 +302,7 @@ function SignUpScreen() {
               control={control}
               render={({ field: { onChange, onBlur, value } }) => (
                 <View>
-                  <TextInput
+                  <InputField
                     label="Email Address"
                     mode="outlined"
                     keyboardType="email-address"
@@ -326,7 +327,7 @@ function SignUpScreen() {
               control={control}
               render={({ field: { onChange, onBlur, value } }) => (
                 <View>
-                  <TextInput
+                  <InputField
                     label="Password"
                     mode="outlined"
                     autoCapitalize="none"
@@ -360,7 +361,7 @@ function SignUpScreen() {
               control={control}
               render={({ field: { onChange, onBlur, value } }) => (
                 <View>
-                  <TextInput
+                  <InputField
                     label="Confirm Password"
                     mode="outlined"
                     autoCapitalize="none"
@@ -445,9 +446,9 @@ function SignUpScreen() {
               )}
             />
           </View>
-          <Button mode="contained" onPress={handleSubmit(onSubmit)}>
+          <PrimaryButton mode="contained" onPress={handleSubmit(onSubmit)}>
             Sign Up
-          </Button>
+          </PrimaryButton>
         </View>
         <View className="flex-row items-center gap-2 my-4">
           <Divider

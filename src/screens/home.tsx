@@ -1,4 +1,4 @@
-import Map from "@/components/ui/map";
+import Map from "@/components/map";
 import ScreenContainer from "@/components/ui/screen-container";
 
 function HomeScreen() {

@@ -25,8 +25,8 @@ function InitialLayout() {
 
   const paperTheme =
     colorScheme === "dark"
-      ? { ...MD3DarkTheme, colors: Colors.dark }
-      : { ...MD3LightTheme, colors: Colors.light };
+      ? { ...MD3DarkTheme, roundness: 2, colors: Colors.dark }
+      : { ...MD3LightTheme, roundness: 2, colors: Colors.light };
 
   useEffect(() => {
     if (!initialised) return;
