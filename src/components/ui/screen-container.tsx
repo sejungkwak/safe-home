@@ -8,8 +8,9 @@ function ScreenContainer({ children }: { children: React.ReactNode }) {
     <SafeAreaView
       className="flex-1"
       style={{ backgroundColor: colors.background }}
+      edges={["top", "left", "right"]}
     >
-      <View className="flex-1 p-4">{children}</View>
+      <View className="flex-1 px-4">{children}</View>
     </SafeAreaView>
   );
 }

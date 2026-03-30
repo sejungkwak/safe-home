@@ -55,6 +55,13 @@
           }
         }
       ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Safe Home to use your location.",
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ],
       "expo-secure-store",
       "expo-sqlite"
     ],
