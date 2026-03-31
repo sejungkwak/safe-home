@@ -53,7 +53,8 @@ export default function HomeScreen() {
           enableDynamicSizing={true}
           maxDynamicContentSize={300}
         >
-          <BottomSheetView className="flex-1 py-4">
+          {/* Extra bottom padding to prevent the navigation bar from overlapping the bottom sheet */}
+          <BottomSheetView className="flex-1 pt-4 pb-80">
             {/* origin location */}
             <MapSearch
               placeholder="Where from?"

@@ -1,47 +1,39 @@
-import React, { useState } from "react";
-import { BottomNavigation } from "react-native-paper";
-
-import AccountScreen from "./account";
-import HomeScreen from "./home";
-import TripsScreen from "./trips";
-
-// https://oss.callstack.com/react-native-paper/docs/components/BottomNavigation/
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
+import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
+import { useColorScheme } from "react-native";
 
 export default function TabLayout() {
-  const [index, setIndex] = useState(0);
-
-  const [routes] = useState([
-    {
-      key: "home",
-      title: "Home",
-      focusedIcon: "home",
-      unfocusedIcon: "home-outline",
-    },
-    {
-      key: "trips",
-      title: "Trips",
-      focusedIcon: "list-box",
-      unfocusedIcon: "list-box-outline",
-    },
-    {
-      key: "account",
-      title: "Account",
-      focusedIcon: "account-circle",
-      unfocusedIcon: "account-circle-outline",
-    },
-  ]);
-
-  const renderScene = BottomNavigation.SceneMap({
-    home: HomeScreen,
-    trips: TripsScreen,
-    account: AccountScreen,
-  });
+  const colorScheme = useColorScheme();
 
   return (
-    <BottomNavigation
-      navigationState={{ index, routes }}
-      onIndexChange={setIndex}
-      renderScene={renderScene}
-    />
+    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <NativeTabs>
+        <NativeTabs.Trigger name="home">
+          <Label>Home</Label>
+          <Icon
+            sf={{ default: "house", selected: "house.fill" }}
+            drawable="ic_menu_home"
+          />
+        </NativeTabs.Trigger>
+        <NativeTabs.Trigger name="trips">
+          <Label>Trips</Label>
+          <Icon
+            sf={{ default: "car", selected: "car.fill" }}
+            drawable="ic_menu_paste_holo_dark"
+          />
+        </NativeTabs.Trigger>
+        <NativeTabs.Trigger name="account">
+          <Label>Account</Label>
+          <Icon
+            sf={{ default: "person.circle", selected: "person.circle.fill" }}
+            drawable="perm_group_personal_info"
+          />
+        </NativeTabs.Trigger>
+      </NativeTabs>
+    </ThemeProvider>
   );
 }
