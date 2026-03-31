@@ -5,6 +5,7 @@ import { Alert } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useTheme } from "react-native-paper";
 
+import Request from "@/components/home/request";
 import Map from "@/components/map/map";
 import MapSearch from "@/components/map/map-search";
 import ScreenContainer from "@/components/ui/screen-container";
@@ -73,6 +74,7 @@ export default function HomeScreen() {
               onClear={() => setDestination(null)}
             />
             {/* TODO Saved addresses for user to select by pressing */}
+            {origin && destination && <Request />}
           </BottomSheetView>
         </BottomSheet>
       </GestureHandlerRootView>

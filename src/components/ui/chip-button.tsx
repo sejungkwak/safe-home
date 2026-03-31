@@ -1,25 +1,26 @@
 import { ReactNode } from "react";
 import { Button, useTheme } from "react-native-paper";
 
-function PrimaryButton({
+export default function ChipButton({
   children,
   ...props
 }: {
   children: ReactNode;
-  [key: string]: any;
+  icon: string;
+  onPress: () => void;
 }) {
   const { colors } = useTheme();
   return (
     <Button
       mode="elevated"
-      labelStyle={{ fontSize: 18, height: 25 }}
-      buttonColor={colors.primary}
+      compact={true}
+      buttonColor={colors.onBackground}
       textColor={colors.background}
-      {...props}
+      style={{ alignSelf: "flex-start", margin: 8, borderRadius: 20 }}
+      icon={props.icon}
+      onPress={props.onPress}
     >
       {children}
     </Button>
   );
 }
-
-export default PrimaryButton;
