@@ -1,6 +1,9 @@
 import { cssInterop } from "nativewind";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
+import { Dimensions } from "react-native";
 import MapView, { PROVIDER_DEFAULT } from "react-native-maps";
+
+import MapDirection from "./map-direction";
 import MapMarker from "./map-marker";
 
 cssInterop(MapView, { className: { target: "style" } });
@@ -12,17 +15,8 @@ export default function Map({
   pickUpCoords: { latitude: number; longitude: number } | null;
   dropOffCoords: { latitude: number; longitude: number } | null;
 }) {
+  const { width, height } = Dimensions.get("window");
   const mapRef = useRef<MapView>(null);
-
-  // zoom-in to show both locations in the screen.
-  useEffect(() => {
-    if (pickUpCoords && dropOffCoords && mapRef.current) {
-      mapRef.current.fitToCoordinates([pickUpCoords, dropOffCoords], {
-        edgePadding: { top: 80, right: 80, bottom: 80, left: 80 },
-        animated: true,
-      });
-    }
-  }, [pickUpCoords, dropOffCoords]);
 
   return (
     <MapView
@@ -44,6 +38,22 @@ export default function Map({
     >
       {pickUpCoords && <MapMarker coordinate={pickUpCoords} />}
       {dropOffCoords && <MapMarker coordinate={dropOffCoords} />}
+      {pickUpCoords && dropOffCoords && (
+        <MapDirection
+          origin={pickUpCoords}
+          destination={dropOffCoords}
+          onReady={(result) => {
+            mapRef.current?.fitToCoordinates(result.coordinates, {
+              edgePadding: {
+                top: height / 20,
+                right: width / 20,
+                bottom: height / 20,
+                left: width / 20,
+              },
+            });
+          }}
+        />
+      )}
     </MapView>
   );
 }
