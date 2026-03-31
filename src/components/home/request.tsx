@@ -8,8 +8,12 @@ import PrimaryButton from "../ui/primary-button";
 
 cssInterop(PrimaryButton, { className: { target: "style" } });
 
-export default function Request() {
+export default function Request({ distance }: { distance: number }) {
   const { colors } = useTheme();
+
+  // Fare calculation: initial charge of €5.00 + €0.50 per km
+  // It is simple and could be extended to factor in time, region, etc.
+  let fare = (5 + distance * 0.5).toFixed(2);
 
   return (
     <View>
@@ -30,9 +34,9 @@ export default function Request() {
           </View>
         </Link>
       </View>
-      {/* TODO onPress: display payment options, fare logic */}
+      {/* TODO onPress: display payment options */}
       <ChipButton icon="wallet-outline" onPress={() => {}}>
-        €25.00 (Cash)
+        €{fare} (Cash)
       </ChipButton>
       {/* TODO onPress: send notification to drivers */}
       <PrimaryButton className="m-2" onPress={() => {}}>

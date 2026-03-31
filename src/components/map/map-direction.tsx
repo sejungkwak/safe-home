@@ -26,7 +26,13 @@ export default function MapDirection({
       strokeWidth={3}
       strokeColor={colors.onBackground}
       optimizeWaypoints={true}
-      onReady={onReady}
+      onReady={(result) => {
+        onReady?.({
+          distance: result.distance,
+          duration: result.duration,
+          coordinates: result.coordinates,
+        });
+      }}
     />
   );
 }

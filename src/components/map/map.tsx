@@ -11,6 +11,7 @@ cssInterop(MapView, { className: { target: "style" } });
 export default function Map({
   pickUpCoords,
   dropOffCoords,
+  onReady,
 }: {
   pickUpCoords: { latitude: number; longitude: number; address: string } | null;
   dropOffCoords: {
@@ -18,6 +19,11 @@ export default function Map({
     longitude: number;
     address: string;
   } | null;
+  onReady?: (result: {
+    distance: number;
+    duration: number;
+    coordinates: { latitude: number; longitude: number }[];
+  }) => void;
 }) {
   const { width, height } = Dimensions.get("window");
   const mapRef = useRef<MapView>(null);
@@ -82,6 +88,7 @@ export default function Map({
           origin={pickUpCoords}
           destination={dropOffCoords}
           onReady={(result) => {
+            onReady?.(result);
             mapRef.current?.fitToCoordinates(result.coordinates, {
               edgePadding: {
                 top: height / 20,

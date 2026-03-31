@@ -27,8 +27,11 @@ export default function HomeScreen() {
   if (errorMsg) Alert.alert(errorMsg);
 
   const [origin, setOrigin] = useState<Coords | null>(null);
-
   const [destination, setDestination] = useState<Coords | null>(null);
+  const [routeInfo, setRouteInfo] = useState<{
+    distance: number;
+    duration: number;
+  } | null>(null);
 
   const bottomSheetRef = useRef<BottomSheet>(null);
 
@@ -44,7 +47,16 @@ export default function HomeScreen() {
 
   return (
     <ScreenContainer>
-      <Map pickUpCoords={origin} dropOffCoords={destination ?? null} />
+      <Map
+        pickUpCoords={origin}
+        dropOffCoords={destination ?? null}
+        onReady={(result) => {
+          setRouteInfo({
+            distance: result.distance,
+            duration: result.duration,
+          });
+        }}
+      />
       <GestureHandlerRootView className="flex-1">
         <BottomSheet
           ref={bottomSheetRef}
@@ -74,7 +86,9 @@ export default function HomeScreen() {
               onClear={() => setDestination(null)}
             />
             {/* TODO Saved addresses for user to select by pressing */}
-            {origin && destination && <Request />}
+            {origin && destination && routeInfo && (
+              <Request distance={routeInfo.distance ?? 0} />
+            )}
           </BottomSheetView>
         </BottomSheet>
       </GestureHandlerRootView>
