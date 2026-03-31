@@ -5,8 +5,8 @@ import { Alert } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useTheme } from "react-native-paper";
 
-import Map from "@/components/map";
-import MapSearch from "@/components/map-search";
+import Map from "@/components/map/map";
+import MapSearch from "@/components/map/map-search";
 import ScreenContainer from "@/components/ui/screen-container";
 import useUserLocation from "@/lib/user-location";
 
