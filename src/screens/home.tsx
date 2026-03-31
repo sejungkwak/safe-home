@@ -66,7 +66,7 @@ export default function HomeScreen() {
             {/* destination location */}
             <MapSearch
               placeholder="Where to?"
-              icon="magnify"
+              icon="map-marker-outline"
               searchFor="destination"
               onSelect={setDestination}
               onClear={() => setDestination(null)}

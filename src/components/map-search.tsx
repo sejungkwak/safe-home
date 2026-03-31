@@ -43,7 +43,13 @@ export default function MapSearch({
       placeholder={props.placeholder}
       renderLeftButton={() => (
         <View className="justify-center items-center ps-2">
-          <Icon source={props.icon} size={20} color={colors.onBackground} />
+          <Icon
+            source={props.icon}
+            size={20}
+            color={
+              searchFor === "origin" ? colors.onBackground : colors.primary
+            }
+          />
         </View>
       )}
       minLength={3}

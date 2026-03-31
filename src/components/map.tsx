@@ -62,12 +62,21 @@ export default function Map({
             }
           : undefined
       }
-      showsUserLocation={true}
       showsPointsOfInterest={false}
       className="flex-1 absolute top-0 left-0 right-0 bottom-0 z-0"
     >
-      {pickUpCoords && <MapMarker coordinate={pickUpCoords} />}
-      {dropOffCoords && <MapMarker coordinate={dropOffCoords} />}
+      {pickUpCoords && (
+        <MapMarker
+          coordinate={pickUpCoords}
+          imageUri={require("@/assets/origin.png")}
+        />
+      )}
+      {dropOffCoords && (
+        <MapMarker
+          coordinate={dropOffCoords}
+          imageUri={require("@/assets/destination.png")}
+        />
+      )}
       {pickUpCoords && dropOffCoords && (
         <MapDirection
           origin={pickUpCoords}
