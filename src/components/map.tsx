@@ -1,5 +1,5 @@
 import { cssInterop } from "nativewind";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Dimensions } from "react-native";
 import MapView, { PROVIDER_DEFAULT } from "react-native-maps";
 
@@ -12,11 +12,41 @@ export default function Map({
   pickUpCoords,
   dropOffCoords,
 }: {
-  pickUpCoords: { latitude: number; longitude: number } | null;
-  dropOffCoords: { latitude: number; longitude: number } | null;
+  pickUpCoords: { latitude: number; longitude: number; address: string } | null;
+  dropOffCoords: {
+    latitude: number;
+    longitude: number;
+    address: string;
+  } | null;
 }) {
   const { width, height } = Dimensions.get("window");
   const mapRef = useRef<MapView>(null);
+
+  useEffect(() => {
+    if (!dropOffCoords && pickUpCoords) {
+      mapRef.current?.animateToRegion(
+        {
+          latitude: pickUpCoords.latitude,
+          longitude: pickUpCoords.longitude,
+          latitudeDelta: 0.005,
+          longitudeDelta: 0.005,
+        },
+        2000,
+      );
+    }
+
+    if (!pickUpCoords && dropOffCoords) {
+      mapRef.current?.animateToRegion(
+        {
+          latitude: dropOffCoords.latitude,
+          longitude: dropOffCoords.longitude,
+          latitudeDelta: 0.005,
+          longitudeDelta: 0.005,
+        },
+        2000,
+      );
+    }
+  }, [pickUpCoords, dropOffCoords]);
 
   return (
     <MapView

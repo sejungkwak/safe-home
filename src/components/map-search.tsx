@@ -1,24 +1,45 @@
 import { BottomSheetTextInput } from "@gorhom/bottom-sheet";
 import { cssInterop } from "nativewind";
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { View } from "react-native";
-import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
+import {
+  GooglePlacesAutocomplete,
+  GooglePlacesAutocompleteRef,
+} from "react-native-google-places-autocomplete";
 import { Icon, useTheme } from "react-native-paper";
 
 cssInterop(View, { className: { target: "style" } });
 
 export default function MapSearch({
   onSelect,
+  onClear,
+  searchFor,
   ...props
 }: {
-  onSelect: (coordinates: { latitude: number; longitude: number }) => void;
+  onSelect: (coordinates: {
+    latitude: number;
+    longitude: number;
+    address: string;
+  }) => void;
+  onClear: () => void;
+  searchFor: "origin" | "destination";
   placeholder: string;
   icon: string;
+  defaultValue?: string;
 }) {
   const { colors } = useTheme();
 
+  const placesRef = useRef<GooglePlacesAutocompleteRef>(null);
+
+  useEffect(() => {
+    if (props.defaultValue) {
+      placesRef.current?.setAddressText(props.defaultValue);
+    }
+  }, [props.defaultValue]);
+
   return (
     <GooglePlacesAutocomplete
+      ref={placesRef}
       placeholder={props.placeholder}
       renderLeftButton={() => (
         <View className="justify-center items-center ps-2">
@@ -30,12 +51,21 @@ export default function MapSearch({
         InputComp: BottomSheetTextInput,
         placeholderTextColor: colors.onBackground,
         autoCorrect: false,
+        onChangeText: (text) => {
+          if (text === "") onClear?.();
+        },
       }}
       styles={{
         textInputContainer: {
-          borderWidth: 2,
+          borderStartWidth: 2,
+          borderEndWidth: 2,
+          borderTopWidth: searchFor === "origin" ? 2 : 1,
+          borderBottomWidth: searchFor === "origin" ? 1 : 2,
           borderColor: colors.onBackground,
-          borderRadius: 10,
+          borderTopLeftRadius: searchFor === "origin" ? 10 : 0,
+          borderTopRightRadius: searchFor === "origin" ? 10 : 0,
+          borderBottomLeftRadius: searchFor === "origin" ? 0 : 10,
+          borderBottomRightRadius: searchFor === "origin" ? 0 : 10,
           marginInline: 8,
         },
         textInput: {
@@ -60,11 +90,12 @@ export default function MapSearch({
       }}
       fetchDetails={true}
       onPress={(data, details = null) => {
-        if (details) {
+        if (data && details) {
           const latitude = details.geometry.location.lat;
           const longitude = details.geometry.location.lng;
+          const address = data.description;
 
-          onSelect({ latitude, longitude });
+          onSelect({ latitude, longitude, address });
         }
       }}
       query={{

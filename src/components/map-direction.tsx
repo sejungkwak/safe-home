@@ -26,9 +26,7 @@ export default function MapDirection({
       strokeWidth={3}
       strokeColor={colors.onBackground}
       optimizeWaypoints={true}
-      onReady={(result) => {
-        onReady?.(result);
-      }}
+      onReady={onReady}
     />
   );
 }

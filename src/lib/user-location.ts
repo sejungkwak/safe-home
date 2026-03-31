@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 // The following function adopted from https://docs.expo.dev/versions/latest/sdk/location/#usage
 
 export default function useUserLocation() {
-  const [location, setLocation] = useState<Location.LocationObject | null>(
-    null,
-  );
+  const [location, setLocation] = useState<{
+    latitude: number;
+    longitude: number;
+    address: string;
+  } | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
@@ -17,7 +19,18 @@ export default function useUserLocation() {
         return;
       }
       let loc = await Location.getCurrentPositionAsync({});
-      setLocation(loc);
+
+      // https://github.com/adrianhajdin/uber/blob/main/app/(root)/(tabs)/home.tsx
+      const address = await Location.reverseGeocodeAsync({
+        latitude: loc.coords?.latitude!,
+        longitude: loc.coords?.longitude!,
+      });
+
+      setLocation({
+        latitude: loc.coords?.latitude!,
+        longitude: loc.coords?.longitude!,
+        address: `${address[0].name} ${address[0].region}`,
+      });
     }
 
     getCurrentLocation();
