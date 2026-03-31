@@ -7,7 +7,14 @@ import { Icon, useTheme } from "react-native-paper";
 
 cssInterop(View, { className: { target: "style" } });
 
-export default function MapSearch({ ...props }) {
+export default function MapSearch({
+  onSelect,
+  ...props
+}: {
+  onSelect: (coordinates: { latitude: number; longitude: number }) => void;
+  placeholder: string;
+  icon: string;
+}) {
   const { colors } = useTheme();
 
   return (
@@ -22,6 +29,7 @@ export default function MapSearch({ ...props }) {
       textInputProps={{
         InputComp: BottomSheetTextInput,
         placeholderTextColor: colors.onBackground,
+        autoCorrect: false,
       }}
       styles={{
         textInputContainer: {
@@ -50,8 +58,14 @@ export default function MapSearch({ ...props }) {
           color: colors.onBackground,
         },
       }}
+      fetchDetails={true}
       onPress={(data, details = null) => {
-        console.log(data, details); // TODO add code to get the location's coords.
+        if (details) {
+          const latitude = details.geometry.location.lat;
+          const longitude = details.geometry.location.lng;
+
+          onSelect({ latitude, longitude });
+        }
       }}
       query={{
         key: process.env.EXPO_PUBLIC_GOOGLE_API_KEY,

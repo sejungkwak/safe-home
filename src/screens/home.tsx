@@ -1,6 +1,6 @@
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import { cssInterop } from "nativewind";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Alert } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Text, useTheme } from "react-native-paper";
@@ -19,17 +19,29 @@ function HomeScreen() {
 
   if (errorMsg) Alert.alert(errorMsg);
 
-  // ref
+  const [destination, setDestination] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   return (
     <ScreenContainer>
       <Map
-        coordinate={
+        pickUpCoords={
           location
             ? {
                 latitude: location.coords.latitude,
                 longitude: location.coords.longitude,
+              }
+            : null
+        }
+        dropOffCoords={
+          destination
+            ? {
+                latitude: destination.latitude,
+                longitude: destination.longitude,
               }
             : null
         }
@@ -44,7 +56,11 @@ function HomeScreen() {
           maxDynamicContentSize={300}
         >
           <BottomSheetView className="flex-1 py-4">
-            <MapSearch placeholder="Where to?" icon="magnify" />
+            <MapSearch
+              placeholder="Where to?"
+              icon="magnify"
+              onSelect={setDestination}
+            />
             <Text className="p-2">Home</Text>
           </BottomSheetView>
         </BottomSheet>
