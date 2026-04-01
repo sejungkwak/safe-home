@@ -2,7 +2,7 @@ import { Button } from "react-native-paper";
 
 import ScreenContainer from "@/components/ui/screen-container";
 import ScreenTitle from "@/components/ui/screen-title";
-import { useSession } from "@/ctx";
+import { useSession } from "@/context/auth";
 
 export default function AccountScreen() {
   const { signOut } = useSession();

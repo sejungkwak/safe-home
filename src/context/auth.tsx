@@ -6,7 +6,7 @@ import {
   useState,
   type PropsWithChildren,
 } from "react";
-import { supabase } from "./lib/supabase";
+import { supabase } from "../lib/supabase";
 
 // The code is modified based on the following resources:
 // https://docs.expo.dev/router/advanced/authentication-rewrites/#using-react-context-and-route-groups

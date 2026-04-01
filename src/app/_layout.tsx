@@ -4,7 +4,7 @@ import { useColorScheme } from "react-native";
 import { MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper";
 
 import { Colors } from "@/constants/theme";
-import { SessionProvider, useSession } from "@/ctx";
+import { SessionProvider, useSession } from "@/context/auth";
 import "../../global.css";
 
 export default function RootLayout() {

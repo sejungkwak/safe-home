@@ -9,7 +9,7 @@ import Request from "@/components/home/request";
 import Map from "@/components/map/map";
 import MapSearch from "@/components/map/map-search";
 import ScreenContainer from "@/components/ui/screen-container";
-import useUserLocation from "@/lib/user-location";
+import useUserLocation from "@/hooks/useUserLocation";
 
 cssInterop(GestureHandlerRootView, { className: { target: "style" } });
 cssInterop(BottomSheetView, { className: { target: "style" } });
