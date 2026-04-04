@@ -23,7 +23,6 @@ import GoogleIcon from "@/components/ui/google-icon";
 import InputField from "@/components/ui/input-field";
 import PrimaryButton from "@/components/ui/primary-button";
 import ScreenContainer from "@/components/ui/screen-container";
-import ScreenTitle from "@/components/ui/screen-title";
 import { signupData, signupSchema } from "@/schemas/sign-up";
 
 function SignUpScreen() {
@@ -219,7 +218,6 @@ function SignUpScreen() {
   return (
     <ScreenContainer>
       <ScrollView>
-        <ScreenTitle>Sign Up</ScreenTitle>
         <View className="mb-4">
           <RadioButton.Group
             onValueChange={(value) => setUserType(value)}

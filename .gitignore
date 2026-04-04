@@ -40,8 +40,12 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+# Expo boilerplate files
 app-example
 
 # generated native folders
 /ios
 /android
+
+# IDE settings
+/.idea

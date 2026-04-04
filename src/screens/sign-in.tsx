@@ -8,7 +8,6 @@ import { HelperText, Text, useTheme } from "react-native-paper";
 import InputField from "@/components/ui/input-field";
 import PrimaryButton from "@/components/ui/primary-button";
 import ScreenContainer from "@/components/ui/screen-container";
-import ScreenTitle from "@/components/ui/screen-title";
 import { supabase } from "@/lib/supabase";
 import { signinData, signinSchema } from "@/schemas/sign-in";
 
@@ -37,7 +36,6 @@ function SigninScreen() {
 
   return (
     <ScreenContainer>
-      <ScreenTitle>Sign In</ScreenTitle>
       <View>
         <Controller
           control={control}
