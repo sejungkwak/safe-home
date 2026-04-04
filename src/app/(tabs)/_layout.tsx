@@ -1,39 +1,68 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import {
   DarkTheme,
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
-import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
+import { Tabs } from "expo-router";
 import { useColorScheme } from "react-native";
+import { useTheme } from "react-native-paper";
 
 export default function TabLayout() {
+  const { colors } = useTheme();
   const colorScheme = useColorScheme();
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <NativeTabs>
-        <NativeTabs.Trigger name="home">
-          <Label>Home</Label>
-          <Icon
-            sf={{ default: "house", selected: "house.fill" }}
-            drawable="ic_menu_home"
-          />
-        </NativeTabs.Trigger>
-        <NativeTabs.Trigger name="trips">
-          <Label>Trips</Label>
-          <Icon
-            sf={{ default: "car", selected: "car.fill" }}
-            drawable="ic_menu_paste_holo_dark"
-          />
-        </NativeTabs.Trigger>
-        <NativeTabs.Trigger name="account">
-          <Label>Account</Label>
-          <Icon
-            sf={{ default: "person.circle", selected: "person.circle.fill" }}
-            drawable="perm_group_personal_info"
-          />
-        </NativeTabs.Trigger>
-      </NativeTabs>
+      <Tabs
+        screenOptions={{
+          tabBarActiveTintColor: colors.primary,
+        }}
+      >
+        <Tabs.Screen
+          name="home"
+          options={{
+            headerShown: false,
+            tabBarIcon: ({ color, focused }) => (
+              <Ionicons
+                name={focused ? "home" : "home-outline"}
+                size={24}
+                color={color}
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="trips"
+          options={{
+            title: "Trips",
+            headerShown: true,
+            headerShadowVisible: false,
+            tabBarIcon: ({ color, focused }) => (
+              <Ionicons
+                name={focused ? "car" : "car-outline"}
+                size={24}
+                color={color}
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="account"
+          options={{
+            title: "Account",
+            headerShown: true,
+            headerShadowVisible: false,
+            tabBarIcon: ({ color, focused }) => (
+              <Ionicons
+                name={focused ? "person-circle" : "person-circle-outline"}
+                size={24}
+                color={color}
+              />
+            ),
+          }}
+        />
+      </Tabs>
     </ThemeProvider>
   );
 }
