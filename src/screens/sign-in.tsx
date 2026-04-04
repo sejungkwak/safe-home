@@ -5,6 +5,8 @@ import { Controller, useForm } from "react-hook-form";
 import { Alert, View } from "react-native";
 import { HelperText, Text, useTheme } from "react-native-paper";
 
+import GoogleSignInButton from "@/components/auth/google-sign-in-button";
+import HorizontalLine from "@/components/ui/horizontal-line";
 import InputField from "@/components/ui/input-field";
 import PrimaryButton from "@/components/ui/primary-button";
 import ScreenContainer from "@/components/ui/screen-container";
@@ -84,9 +86,13 @@ function SigninScreen() {
           )}
         />
       </View>
-      <PrimaryButton mode="contained" onPress={handleSubmit(onSubmit)}>
-        Sign In
-      </PrimaryButton>
+      <PrimaryButton onPress={handleSubmit(onSubmit)}>Sign In</PrimaryButton>
+      <View className="flex-row items-center gap-2 my-4">
+        <HorizontalLine />
+        <Text>or</Text>
+        <HorizontalLine />
+      </View>
+      <GoogleSignInButton />
 
       <View className="flex-row justify-center gap-2 mt-8">
         <Text variant="bodyLarge">Don&apos;t have an account?</Text>

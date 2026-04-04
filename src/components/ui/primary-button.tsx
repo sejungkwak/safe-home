@@ -1,25 +1,33 @@
 import { ReactNode } from "react";
 import { Button, useTheme } from "react-native-paper";
 
-function PrimaryButton({
+export default function PrimaryButton({
   children,
+  mode = "contained",
   ...props
 }: {
   children: ReactNode;
+  mode?: "outlined" | "contained";
   [key: string]: any;
 }) {
   const { colors } = useTheme();
+  const outlined = mode === "outlined";
+
   return (
     <Button
-      mode="elevated"
       labelStyle={{ fontSize: 18, height: 25 }}
-      buttonColor={colors.primary}
-      textColor={colors.background}
+      buttonColor={outlined ? colors.background : colors.primary}
+      textColor={outlined ? colors.primary : colors.background}
+      style={
+        outlined && {
+          borderColor: colors.primary,
+          borderWidth: 1,
+          paddingBlock: 4,
+        }
+      }
       {...props}
     >
       {children}
     </Button>
   );
 }
-
-export default PrimaryButton;

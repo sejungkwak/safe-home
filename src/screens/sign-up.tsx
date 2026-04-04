@@ -11,7 +11,6 @@ import PhoneInput, {
 import {
   Button,
   Card,
-  Divider,
   HelperText,
   RadioButton,
   Text,
@@ -19,7 +18,8 @@ import {
 } from "react-native-paper";
 import { supabase } from "../lib/supabase";
 
-import GoogleIcon from "@/components/ui/google-icon";
+import GoogleSignInButton from "@/components/auth/google-sign-in-button";
+import HorizontalLine from "@/components/ui/horizontal-line";
 import InputField from "@/components/ui/input-field";
 import PrimaryButton from "@/components/ui/primary-button";
 import ScreenContainer from "@/components/ui/screen-container";
@@ -446,24 +446,16 @@ function SignUpScreen() {
               )}
             />
           </View>
-          <PrimaryButton mode="contained" onPress={handleSubmit(onSubmit)}>
+          <PrimaryButton onPress={handleSubmit(onSubmit)}>
             Sign Up
           </PrimaryButton>
         </View>
         <View className="flex-row items-center gap-2 my-4">
-          <Divider
-            className="flex-1"
-            style={{ backgroundColor: colors.onBackground }}
-          />
+          <HorizontalLine />
           <Text>or</Text>
-          <Divider
-            className="flex-1"
-            style={{ backgroundColor: colors.onBackground }}
-          />
+          <HorizontalLine />
         </View>
-        <Button mode="outlined" icon={() => <GoogleIcon size={20} />}>
-          Sign in with Google
-        </Button>
+        <GoogleSignInButton />
 
         <View className="flex-row justify-center gap-2 mt-8">
           <Text variant="bodyLarge">Already have an account?</Text>
