@@ -5,7 +5,7 @@ import { Controller, useForm } from "react-hook-form";
 import { Alert, View } from "react-native";
 import { HelperText, Text, useTheme } from "react-native-paper";
 
-import GoogleSignInButton from "@/components/auth/google-sign-in-button";
+import GoogleSignIn from "@/components/auth/google-sign-in";
 import HorizontalLine from "@/components/ui/horizontal-line";
 import InputField from "@/components/ui/input-field";
 import PrimaryButton from "@/components/ui/primary-button";
@@ -13,10 +13,14 @@ import ScreenContainer from "@/components/ui/screen-container";
 import { supabase } from "@/lib/supabase";
 import { signinData, signinSchema } from "@/schemas/sign-in";
 
+/**
+ * Renders the email/passowrd sign in form and the Google sign in button.
+ * User input is validated with the Zod schema and Supabase Auth.
+ */
 function SigninScreen() {
   const { colors } = useTheme();
 
-  // Initialise React hook form
+  // initialise React Hook Form with Zod schema validation
   const {
     handleSubmit,
     control,
@@ -26,11 +30,16 @@ function SigninScreen() {
     defaultValues: { email: "", password: "" },
   });
 
+  /**
+   * Submits the user input data after validation has passed.
+   */
   async function onSubmit(values: signinData) {
+    // pass the validated email and password to Supabase Auth
     const { error } = await supabase.auth.signInWithPassword({
       email: values.email,
       password: values.password,
     });
+    // display the error message if authentication fails
     if (error) {
       Alert.alert(error.message);
     }
@@ -92,7 +101,7 @@ function SigninScreen() {
         <Text>or</Text>
         <HorizontalLine />
       </View>
-      <GoogleSignInButton />
+      <GoogleSignIn />
 
       <View className="flex-row justify-center gap-2 mt-8">
         <Text variant="bodyLarge">Don&apos;t have an account?</Text>

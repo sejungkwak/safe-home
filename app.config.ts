@@ -15,6 +15,7 @@ export default {
       bundleIdentifier: "com.sejungkwak.safehome",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
+        GIDClientID: process.env.SUPABASE_AUTH_EXTERNAL_GOOGLE_IOS_CLIENT_ID,
       },
     },
     android: {
@@ -85,6 +86,13 @@ export default {
       ],
       "expo-secure-store",
       "expo-sqlite",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          iosUrlScheme:
+            process.env.SUPABASE_AUTH_EXTERNAL_GOOGLE_IOS_URL_SCHEME,
+        },
+      ],
     ],
     experiments: {
       typedRoutes: true,

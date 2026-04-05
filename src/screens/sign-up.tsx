@@ -18,13 +18,19 @@ import {
 } from "react-native-paper";
 import { supabase } from "../lib/supabase";
 
-import GoogleSignInButton from "@/components/auth/google-sign-in-button";
+import GoogleSignIn from "@/components/auth/google-sign-in";
 import HorizontalLine from "@/components/ui/horizontal-line";
 import InputField from "@/components/ui/input-field";
 import PrimaryButton from "@/components/ui/primary-button";
 import ScreenContainer from "@/components/ui/screen-container";
 import { signupData, signupSchema } from "@/schemas/sign-up";
 
+/**
+ * Renders the registration form containing user types (Rider, Driver, or Both), name,
+ * phone number, email address, password, and driving licence and profile photo upload fields
+ * for Driver/Both user types, along with the Google sign in button.
+ * User input is validated with the Zod schema and stored in Supabase Auth if succeessful.
+ */
 function SignUpScreen() {
   const [userType, setUserType] = useState("rider");
   const [drivingLicence, setDrivingLicence] = useState<string | null>(null);
@@ -33,7 +39,7 @@ function SignUpScreen() {
   const { colors } = useTheme();
   const colorScheme = useColorScheme();
 
-  // Initialise React hook form with Zod validation
+  // initialise React Hook Form with Zod schema validation
   const {
     handleSubmit,
     control,
@@ -55,15 +61,16 @@ function SignUpScreen() {
     },
   });
 
-  // Clear error messages on user type changes.
+  // clear error messages on user type changes.
   useEffect(() => {
     clearErrors();
   }, [userType, clearErrors]);
 
+  // the react-native-international-phone-number package is using for
+  // country code selection and phone number validation
   const [selectedCountry, setSelectedCountry] = useState<undefined | ICountry>(
     undefined,
   );
-
   function handleSelectedCountry(country: ICountry) {
     setSelectedCountry(country);
   }
@@ -71,8 +78,13 @@ function SignUpScreen() {
   // Image upload code is adopted from the following resources:
   // https://docs.expo.dev/versions/latest/sdk/imagepicker/
   // https://supabase.com/docs/guides/getting-started/tutorials/with-expo-react-native?queryGroups=database-method&database-method=sql#create-an-upload-widget
-  const onSelectImage = async (field: "drivingLicence" | "profilePhoto") => {
+
+  /**
+   * Opens the device media library and displays the selected image on the screen.
+   */
+  async function onSelectImage(field: "drivingLicence" | "profilePhoto") {
     try {
+      // request permission to access the device media library
       const permissionResult =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
 
@@ -84,6 +96,7 @@ function SignUpScreen() {
         return;
       }
 
+      // launch the device media library
       let result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ["images"],
         allowsEditing: true,
@@ -98,6 +111,7 @@ function SignUpScreen() {
         throw new Error("No image uri!");
       }
 
+      // store the selected image's metadata in the form field and validate it
       setValue(
         field,
         {
@@ -119,23 +133,31 @@ function SignUpScreen() {
         Alert.alert(error.message);
       }
     }
-  };
+  }
 
-  const uploadImage = async (
+  /**
+   * Uploads an image file to the specified Supabase storage bucket.
+   */
+  async function uploadImage(
     image: {
       uri: string;
       name: string;
       mimeType: string;
     },
     bucket: string,
-  ) => {
+  ) {
+    // extract the file extension from a file name
     const fileExt = image.name.split(".").pop();
+    // generate a random file name
     const filePath = `${Math.random()}.${fileExt}`;
+    // convert the image uri to an array buffer.
     const arraybuffer = await fetch(image.uri).then((res) => res.arrayBuffer());
 
+    // upload the image to the storage bucket.
     const { error } = await supabase.storage
       .from(bucket)
       .upload(filePath, arraybuffer, {
+        // fall back to jpeg if the mimeType is not defined
         contentType: image.mimeType ?? "image/jpeg",
       });
 
@@ -144,10 +166,13 @@ function SignUpScreen() {
     }
 
     return filePath;
-  };
+  }
 
+  /**
+   * Handles form submission after Zod schema validations have passed.
+   */
   async function onSubmit(values: signupData) {
-    // Validate phone number input
+    // validate phone number input
     const phoneNumber = `${selectedCountry?.idd?.root} ${values.phone}`;
     const isValid = isValidPhoneNumber(
       values.phone,
@@ -160,7 +185,7 @@ function SignUpScreen() {
       return;
     }
 
-    // Set error messages for image upload fields
+    // set error messages for image upload fields
     if ((userType === "driver" || userType === "both") && !drivingLicence) {
       setError("drivingLicence", {
         message: "Driving Licence photo is required.",
@@ -183,7 +208,7 @@ function SignUpScreen() {
       profilePhotoUrl = await uploadImage(values.profilePhoto, "profiles");
     }
 
-    // Register a new user with Supabase auth
+    // register a new user with Supabase Auth
     const {
       data: { session },
       error,
@@ -207,8 +232,10 @@ function SignUpScreen() {
       return;
     }
 
+    // a session starts when a user verifies their email
     if (!session) {
       Alert.alert("Please check your inbox for email verification!");
+      // clear input fields
       reset();
       setDrivingLicence(null);
       setProfilePhoto(null);
@@ -455,7 +482,7 @@ function SignUpScreen() {
           <Text>or</Text>
           <HorizontalLine />
         </View>
-        <GoogleSignInButton />
+        <GoogleSignIn />
 
         <View className="flex-row justify-center gap-2 mt-8">
           <Text variant="bodyLarge">Already have an account?</Text>
