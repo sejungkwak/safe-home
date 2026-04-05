@@ -1,18 +1,22 @@
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import { useRouter } from "expo-router";
 import { cssInterop } from "nativewind";
 import { useEffect, useRef, useState } from "react";
-import { Alert } from "react-native";
+import { Alert, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useTheme } from "react-native-paper";
 
 import Request from "@/components/home/request";
 import Map from "@/components/map/map";
 import MapSearch from "@/components/map/map-search";
+import ChipButton from "@/components/ui/chip-button";
 import ScreenContainer from "@/components/ui/screen-container";
 import useUserLocation from "@/hooks/use-user-location";
 
+// enable NativeWind className support for third party components
 cssInterop(GestureHandlerRootView, { className: { target: "style" } });
 cssInterop(BottomSheetView, { className: { target: "style" } });
+cssInterop(ChipButton, { className: { target: "style" } });
 
 interface Coords {
   latitude: number;
@@ -20,9 +24,16 @@ interface Coords {
   address: string;
 }
 
+/**
+ * Displays a map with two input fields for the origin and destination.
+ * The origin is set to the user's current location once the permission is granted.
+ * Once both locations are set, the route and fare are displayed for users to request a driver.
+ */
 export default function HomeScreen() {
   const { colors } = useTheme();
+  const router = useRouter();
 
+  // retrieve the user's current location and any permission or location error message
   const { errorMsg, location } = useUserLocation();
   if (errorMsg) Alert.alert(errorMsg);
 
@@ -35,7 +46,10 @@ export default function HomeScreen() {
 
   const bottomSheetRef = useRef<BottomSheet>(null);
 
+  // sets the user's location as the default origin
+  // the map renders before the location value is available, so the location needs to be tracked.
   useEffect(() => {
+    if (origin) return;
     if (location && !origin) {
       setOrigin({
         latitude: location.latitude,
@@ -43,7 +57,7 @@ export default function HomeScreen() {
         address: location.address,
       });
     }
-  }, [location]);
+  }, [location, origin]);
 
   return (
     <ScreenContainer>
@@ -66,8 +80,7 @@ export default function HomeScreen() {
           enableDynamicSizing={true}
           maxDynamicContentSize={300}
         >
-          {/* Extra bottom padding to prevent the navigation bar from overlapping the bottom sheet */}
-          <BottomSheetView className="flex-1 pt-4 pb-80">
+          <BottomSheetView className="flex-1">
             {/* origin location */}
             <MapSearch
               placeholder="Where from?"
@@ -78,13 +91,25 @@ export default function HomeScreen() {
               defaultValue={origin?.address}
             />
             {/* destination location */}
-            <MapSearch
-              placeholder="Where to?"
-              icon="map-marker-outline"
-              searchFor="destination"
-              onSelect={setDestination}
-              onClear={() => setDestination(null)}
-            />
+            <View className="relative">
+              <MapSearch
+                placeholder="Where to?"
+                icon="map-marker-outline"
+                searchFor="destination"
+                onSelect={setDestination}
+                onClear={() => setDestination(null)}
+              />
+              <ChipButton
+                icon="calendar-clock-outline"
+                className="absolute top-2 right-4"
+                disabled={!routeInfo}
+                onPress={() => {
+                  router.push("/booking");
+                }}
+              >
+                Later
+              </ChipButton>
+            </View>
             {/* TODO Saved addresses for user to select by pressing */}
             {origin && destination && routeInfo && (
               <Request distance={routeInfo.distance ?? 0} />

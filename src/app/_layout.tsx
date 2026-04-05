@@ -5,6 +5,7 @@ import { MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper";
 
 import { Colors } from "@/constants/theme";
 import { SessionProvider, useSession } from "@/context/auth";
+import { FareProvider } from "@/context/fare";
 import "../../global.css";
 
 export default function RootLayout() {
@@ -45,7 +46,9 @@ function InitialLayout() {
 
   return (
     <PaperProvider theme={paperTheme}>
-      <RootStack />
+      <FareProvider>
+        <RootStack />
+      </FareProvider>
     </PaperProvider>
   );
 }
@@ -70,6 +73,15 @@ function RootStack() {
         }}
       />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="booking"
+        options={{
+          headerTitle: "Pickup Time",
+          headerShadowVisible: false,
+          headerBackVisible: true,
+          headerBackButtonDisplayMode: "minimal",
+        }}
+      />
     </Stack>
   );
 }

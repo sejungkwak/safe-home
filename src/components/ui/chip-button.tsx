@@ -6,8 +6,7 @@ export default function ChipButton({
   ...props
 }: {
   children: ReactNode;
-  icon: string;
-  onPress: () => void;
+  [key: string]: any;
 }) {
   const { colors } = useTheme();
   return (
@@ -17,8 +16,7 @@ export default function ChipButton({
       buttonColor={colors.onBackground}
       textColor={colors.background}
       style={{ alignSelf: "flex-start", margin: 8, borderRadius: 20 }}
-      icon={props.icon}
-      onPress={props.onPress}
+      {...props}
     >
       {children}
     </Button>

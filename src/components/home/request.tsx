@@ -3,6 +3,9 @@ import { cssInterop } from "nativewind";
 import { Text, View } from "react-native";
 import { Icon, useTheme } from "react-native-paper";
 
+import { useFare } from "@/context/fare";
+
+import { useEffect } from "react";
 import ChipButton from "../ui/chip-button";
 import PrimaryButton from "../ui/primary-button";
 
@@ -10,10 +13,16 @@ cssInterop(PrimaryButton, { className: { target: "style" } });
 
 export default function Request({ distance }: { distance: number }) {
   const { colors } = useTheme();
+  const { setFare } = useFare();
 
-  // Fare calculation: initial charge of €5.00 + €0.50 per km
-  // It is simple and could be extended to factor in time, region, etc.
-  let fare = (5 + distance * 0.5).toFixed(2);
+  // fare calculation: initial charge of €5.00 + €0.50 per km
+  // it is simple and could be extended to factor in time, region, etc.
+  const fare = (5 + distance * 0.5).toFixed(2);
+
+  // store the value of fare in the React context
+  useEffect(() => {
+    setFare(Number(fare));
+  }, [fare]);
 
   return (
     <View>
