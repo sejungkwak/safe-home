@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { Text, View } from "react-native";
 import { Icon, useTheme } from "react-native-paper";
 
+import BookingDateTimePicker from "@/components/home/booking-date-time-picker";
+import DateFormatter from "@/components/home/date-formatter";
 import ChipButton from "@/components/ui/chip-button";
 import PrimaryButton from "@/components/ui/primary-button";
 import ScreenContainer from "@/components/ui/screen-container";
@@ -13,26 +16,16 @@ import { useFare } from "@/context/fare";
 export default function BookingScreen() {
   const { colors } = useTheme();
 
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+
+  // set the default date and time to the formatted current date and time
+  const { formattedDate, formattedTime } = DateFormatter();
+  const [date, setDate] = useState<string>(formattedDate);
+  const [time, setTime] = useState<string>(formattedTime);
+
   // retrieve the fare information
   const { fare } = useFare();
-
-  // create a new Date object representing the current date and time, plus one hour
-  const now = new Date();
-  const plusOneHour = new Date(now);
-  plusOneHour.setHours(plusOneHour.getHours() + 1);
-
-  // format date: e.g. 5 April 2026
-  const date = plusOneHour.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-
-  // format time: e.g. 13:30
-  const time = plusOneHour.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 
   return (
     <ScreenContainer>
@@ -46,8 +39,38 @@ export default function BookingScreen() {
       {/* Booking details (Date, Time, Fare) */}
       <View className="flex-1 justify-between">
         <View>
-          <ChipButton icon="calendar-search">{date}</ChipButton>
-          <ChipButton icon="clock-plus-outline">{time}</ChipButton>
+          <ChipButton
+            icon="calendar-search"
+            onPress={() => {
+              setShowDatePicker(true);
+              setShowTimePicker(false);
+            }}
+          >
+            {date}
+          </ChipButton>
+          <ChipButton
+            icon="clock-plus-outline"
+            onPress={() => {
+              setShowTimePicker(true);
+              setShowDatePicker(false);
+            }}
+          >
+            {time}
+          </ChipButton>
+          {showDatePicker && (
+            <BookingDateTimePicker
+              pickerType="date"
+              onClose={() => setShowDatePicker(false)}
+              selectedValue={setDate}
+            />
+          )}
+          {showTimePicker && (
+            <BookingDateTimePicker
+              pickerType="time"
+              onClose={() => setShowTimePicker(false)}
+              selectedValue={setTime}
+            />
+          )}
           <View className="flex-row items-center gap-2 pt-4 ps-4">
             <Icon
               size={20}

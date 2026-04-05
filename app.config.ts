@@ -93,6 +93,7 @@ export default {
             process.env.SUPABASE_AUTH_EXTERNAL_GOOGLE_IOS_URL_SCHEME,
         },
       ],
+      ["@react-native-community/datetimepicker"],
     ],
     experiments: {
       typedRoutes: true,
