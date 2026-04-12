@@ -3,7 +3,7 @@ import { cssInterop } from "nativewind";
 import { Text, View } from "react-native";
 import { Icon, useTheme } from "react-native-paper";
 
-import { useFare } from "@/context/fare";
+import { useTrip } from "@/context/trip";
 
 import { useEffect } from "react";
 import ChipButton from "../ui/chip-button";
@@ -13,7 +13,7 @@ cssInterop(PrimaryButton, { className: { target: "style" } });
 
 export default function Request({ distance }: { distance: number }) {
   const { colors } = useTheme();
-  const { setFare } = useFare();
+  const { setFare } = useTrip();
 
   // fare calculation: initial charge of €5.00 + €0.50 per km
   // it is simple and could be extended to factor in time, region, etc.
@@ -23,6 +23,10 @@ export default function Request({ distance }: { distance: number }) {
   useEffect(() => {
     setFare(Number(fare));
   }, [fare]);
+
+  function onSubmit() {
+    console.log("request button pressed");
+  }
 
   return (
     <View>
@@ -48,7 +52,7 @@ export default function Request({ distance }: { distance: number }) {
         €{fare} (Cash)
       </ChipButton>
       {/* TODO onPress: send notification to drivers */}
-      <PrimaryButton className="m-2" onPress={() => {}}>
+      <PrimaryButton className="m-2" onPress={onSubmit}>
         Request
       </PrimaryButton>
     </View>

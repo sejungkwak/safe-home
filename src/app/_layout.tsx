@@ -5,7 +5,7 @@ import { MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper";
 
 import { Colors } from "@/constants/theme";
 import { SessionProvider, useSession } from "@/context/auth";
-import { FareProvider } from "@/context/fare";
+import { TripProvider } from "@/context/trip";
 import "../../global.css";
 
 export default function RootLayout() {
@@ -46,9 +46,9 @@ function InitialLayout() {
 
   return (
     <PaperProvider theme={paperTheme}>
-      <FareProvider>
+      <TripProvider>
         <RootStack />
-      </FareProvider>
+      </TripProvider>
     </PaperProvider>
   );
 }
