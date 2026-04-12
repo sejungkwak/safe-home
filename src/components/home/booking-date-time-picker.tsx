@@ -3,6 +3,8 @@ import { useState } from "react";
 import { Button, Platform } from "react-native";
 import DateFormatter from "./date-formatter";
 
+import { useTrip } from "@/context/trip";
+
 type PickerMode = "date" | "time";
 
 /**
@@ -23,6 +25,8 @@ export default function BookingDateTimePicker({
   const minSelectable = new Date(now);
   minSelectable.setHours(minSelectable.getHours() + 1);
 
+  const { dateTime, setDateTime } = useTrip();
+
   const [date, setDate] = useState(pickerType === "date" ? minSelectable : now);
 
   const maxSelectable = new Date(now);
@@ -36,6 +40,26 @@ export default function BookingDateTimePicker({
 
     if (selectedDate) {
       setDate(selectedDate);
+
+      // merge the existing dateTime with the selected dataTime
+      const base = dateTime ?? selectedDate;
+      const finalDateTime = new Date(base);
+      if (pickerType === "date") {
+        finalDateTime.setFullYear(
+          selectedDate.getFullYear(),
+          selectedDate.getMonth(),
+          selectedDate.getDate(),
+        );
+      } else {
+        finalDateTime.setHours(
+          selectedDate.getHours(),
+          selectedDate.getMinutes(),
+          0,
+          0,
+        );
+      }
+      // store new dateTime in React state
+      setDateTime(finalDateTime);
 
       // convert date and time to string
       const { formattedDate, formattedTime } = DateFormatter(selectedDate);

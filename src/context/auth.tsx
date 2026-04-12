@@ -80,6 +80,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
       value={{
         signIn,
         signOut,
+        user,
         session,
         initialised,
       }}

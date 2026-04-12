@@ -7,7 +7,9 @@ import DateFormatter from "@/components/home/date-formatter";
 import ChipButton from "@/components/ui/chip-button";
 import PrimaryButton from "@/components/ui/primary-button";
 import ScreenContainer from "@/components/ui/screen-container";
+import { useSession } from "@/context/auth";
 import { useTrip } from "@/context/trip";
+import createTrip from "@/lib/create-trip";
 
 /**
  * Displays date and time picker buttons and the fare information
@@ -15,6 +17,8 @@ import { useTrip } from "@/context/trip";
  */
 export default function BookingScreen() {
   const { colors } = useTheme();
+  const { user } = useSession();
+  const { origin, destination, fare, dateTime } = useTrip();
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
@@ -24,11 +28,16 @@ export default function BookingScreen() {
   const [date, setDate] = useState<string>(formattedDate);
   const [time, setTime] = useState<string>(formattedTime);
 
-  // retrieve the fare information
-  const { fare } = useTrip();
+  const userId = user?.id;
 
-  function onSubmit() {
-    console.log("confirm button pressed");
+  async function onSubmit() {
+    await createTrip({
+      userId: userId,
+      origin: origin,
+      destination: destination,
+      dateTime: dateTime,
+      fare: fare,
+    });
   }
 
   return (
