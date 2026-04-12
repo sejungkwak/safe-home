@@ -2,7 +2,7 @@ import "dotenv/config";
 
 export default {
   expo: {
-    name: "SafeHome",
+    name: "Safe Home",
     slug: "SafeHome",
     version: "1.0.0",
     orientation: "portrait",
@@ -16,6 +16,7 @@ export default {
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
         GIDClientID: process.env.SUPABASE_AUTH_EXTERNAL_GOOGLE_IOS_CLIENT_ID,
+        UIBackgroundModes: ["fetch", "remote-notification"],
       },
     },
     android: {
@@ -39,8 +40,11 @@ export default {
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_LOCATION",
+        "android.permission.NOTIFICATIONS",
+        "android.permission.POST_NOTIFICATIONS",
       ],
       package: "com.sejungkwak.safehome",
+      googleServicesFile: "./google-services.json",
     },
     web: {
       output: "static",
@@ -84,8 +88,6 @@ export default {
           isAndroidForegroundServiceEnabled: true,
         },
       ],
-      "expo-secure-store",
-      "expo-sqlite",
       [
         "@react-native-google-signin/google-signin",
         {
@@ -93,7 +95,10 @@ export default {
             process.env.SUPABASE_AUTH_EXTERNAL_GOOGLE_IOS_URL_SCHEME,
         },
       ],
-      ["@react-native-community/datetimepicker"],
+      "expo-secure-store",
+      "expo-sqlite",
+      "@react-native-community/datetimepicker",
+      "expo-notifications",
     ],
     experiments: {
       typedRoutes: true,

@@ -9,6 +9,7 @@ import PrimaryButton from "@/components/ui/primary-button";
 import ScreenContainer from "@/components/ui/screen-container";
 import { useSession } from "@/context/auth";
 import { useTrip } from "@/context/trip";
+import createNotification from "@/lib/create-notification";
 import createTrip from "@/lib/create-trip";
 
 /**
@@ -30,13 +31,27 @@ export default function BookingScreen() {
 
   const userId = user?.id;
 
+  /**
+   * handles the Confirm button press.
+   * creates new data entries for trip and notification tables.
+   */
   async function onSubmit() {
-    await createTrip({
+    const newTrip = await createTrip({
       userId: userId,
       origin: origin,
       destination: destination,
       dateTime: dateTime,
       fare: fare,
+    });
+
+    await createNotification({
+      userId: userId,
+      origin: origin,
+      destination: destination,
+      dateTime: dateTime,
+      fare: fare,
+      notificationType: "ride_requested",
+      tripId: newTrip.id,
     });
   }
 

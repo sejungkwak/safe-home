@@ -6,6 +6,7 @@ import { Icon, useTheme } from "react-native-paper";
 
 import { useSession } from "@/context/auth";
 import { useTrip } from "@/context/trip";
+import createNotification from "@/lib/create-notification";
 import createTrip from "@/lib/create-trip";
 import ChipButton from "../ui/chip-button";
 import PrimaryButton from "../ui/primary-button";
@@ -33,13 +34,27 @@ export default function Request({ distance }: { distance: number }) {
     setFare(fare);
   }, [fare, setFare]);
 
+  /**
+   * handles the Request button press.
+   * creates new data entries for trip and notification tables.
+   */
   async function onSubmit() {
-    await createTrip({
+    const newTrip = await createTrip({
       userId: userId,
       origin: origin,
       destination: destination,
       dateTime: dateTime.current,
       fare: fare,
+    });
+
+    await createNotification({
+      userId: userId,
+      origin: origin,
+      destination: destination,
+      dateTime: dateTime.current,
+      fare: fare,
+      notificationType: "ride_requested",
+      tripId: newTrip.id,
     });
   }
 
@@ -66,7 +81,6 @@ export default function Request({ distance }: { distance: number }) {
       <ChipButton icon="wallet-outline" onPress={() => {}}>
         €{fare} (Cash)
       </ChipButton>
-      {/* TODO onPress: send notification to drivers */}
       <PrimaryButton className="m-2" onPress={onSubmit}>
         Request
       </PrimaryButton>
