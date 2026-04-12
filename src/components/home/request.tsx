@@ -1,11 +1,12 @@
 import { Link } from "expo-router";
 import { cssInterop } from "nativewind";
+import { useEffect, useRef } from "react";
 import { Text, View } from "react-native";
 import { Icon, useTheme } from "react-native-paper";
 
+import { useSession } from "@/context/auth";
 import { useTrip } from "@/context/trip";
-
-import { useEffect } from "react";
+import createTrip from "@/lib/create-trip";
 import ChipButton from "../ui/chip-button";
 import PrimaryButton from "../ui/primary-button";
 
@@ -13,19 +14,33 @@ cssInterop(PrimaryButton, { className: { target: "style" } });
 
 export default function Request({ distance }: { distance: number }) {
   const { colors } = useTheme();
-  const { setFare } = useTrip();
+  const { user } = useSession();
+  const { origin, destination, setDateTime, setFare } = useTrip();
+
+  const userId = user?.id;
+  const dateTime = useRef(new Date());
 
   // fare calculation: initial charge of €5.00 + €0.50 per km
   // it is simple and could be extended to factor in time, region, etc.
-  const fare = (5 + distance * 0.5).toFixed(2);
+  const fare = Number((5 + distance * 0.5).toFixed(2));
+
+  useEffect(() => {
+    setDateTime(dateTime.current);
+  }, [setDateTime]);
 
   // store the value of fare in the React context
   useEffect(() => {
-    setFare(Number(fare));
-  }, [fare]);
+    setFare(fare);
+  }, [fare, setFare]);
 
-  function onSubmit() {
-    console.log("request button pressed");
+  async function onSubmit() {
+    await createTrip({
+      userId: userId,
+      origin: origin,
+      destination: destination,
+      dateTime: dateTime.current,
+      fare: fare,
+    });
   }
 
   return (

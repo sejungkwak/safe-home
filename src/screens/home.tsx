@@ -1,7 +1,7 @@
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 import { cssInterop } from "nativewind";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Alert, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useTheme } from "react-native-paper";
@@ -11,18 +11,13 @@ import Map from "@/components/map/map";
 import MapSearch from "@/components/map/map-search";
 import ChipButton from "@/components/ui/chip-button";
 import ScreenContainer from "@/components/ui/screen-container";
+import { useTrip } from "@/context/trip";
 import useUserLocation from "@/hooks/use-user-location";
 
 // enable NativeWind className support for third party components
 cssInterop(GestureHandlerRootView, { className: { target: "style" } });
 cssInterop(BottomSheetView, { className: { target: "style" } });
 cssInterop(ChipButton, { className: { target: "style" } });
-
-interface Coords {
-  latitude: number;
-  longitude: number;
-  address: string;
-}
 
 /**
  * Displays a map with two input fields for the origin and destination.
@@ -37,12 +32,14 @@ export default function HomeScreen() {
   const { errorMsg, location } = useUserLocation();
   if (errorMsg) Alert.alert(errorMsg);
 
-  const [origin, setOrigin] = useState<Coords | null>(null);
-  const [destination, setDestination] = useState<Coords | null>(null);
-  const [routeInfo, setRouteInfo] = useState<{
-    distance: number;
-    duration: number;
-  } | null>(null);
+  const {
+    origin,
+    destination,
+    routeInfo,
+    setOrigin,
+    setDestination,
+    setRouteInfo,
+  } = useTrip();
 
   const bottomSheetRef = useRef<BottomSheet>(null);
 
@@ -57,7 +54,7 @@ export default function HomeScreen() {
         address: location.address,
       });
     }
-  }, [location, origin]);
+  }, [location, origin, setOrigin]);
 
   return (
     <ScreenContainer>
