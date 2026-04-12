@@ -7,7 +7,7 @@ import DateFormatter from "@/components/home/date-formatter";
 import ChipButton from "@/components/ui/chip-button";
 import PrimaryButton from "@/components/ui/primary-button";
 import ScreenContainer from "@/components/ui/screen-container";
-import { useFare } from "@/context/fare";
+import { useTrip } from "@/context/trip";
 
 /**
  * Displays date and time picker buttons and the fare information
@@ -25,7 +25,11 @@ export default function BookingScreen() {
   const [time, setTime] = useState<string>(formattedTime);
 
   // retrieve the fare information
-  const { fare } = useFare();
+  const { fare } = useTrip();
+
+  function onSubmit() {
+    console.log("confirm button pressed");
+  }
 
   return (
     <ScreenContainer>
@@ -82,7 +86,7 @@ export default function BookingScreen() {
             </Text>
           </View>
         </View>
-        <PrimaryButton>Confirm</PrimaryButton>
+        <PrimaryButton onPress={onSubmit}>Confirm</PrimaryButton>
       </View>
     </ScreenContainer>
   );
