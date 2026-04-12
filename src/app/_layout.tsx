@@ -1,3 +1,4 @@
+import * as Notifications from "expo-notifications";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect } from "react";
 import { useColorScheme } from "react-native";
@@ -5,10 +6,23 @@ import { MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper";
 
 import { Colors } from "@/constants/theme";
 import { SessionProvider, useSession } from "@/context/auth";
+import { NotificationProvider } from "@/context/notification";
 import { TripProvider } from "@/context/trip";
+import { useRouterNotifications } from "@/hooks/use-router-notifications";
 import "../../global.css";
 
+// notification settings
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
+
 export default function RootLayout() {
+  useRouterNotifications();
   return (
     <SessionProvider>
       <InitialLayout />
@@ -47,7 +61,9 @@ function InitialLayout() {
   return (
     <PaperProvider theme={paperTheme}>
       <TripProvider>
-        <RootStack />
+        <NotificationProvider>
+          <RootStack />
+        </NotificationProvider>
       </TripProvider>
     </PaperProvider>
   );
