@@ -7,6 +7,7 @@ import { MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper";
 import { Colors } from "@/constants/theme";
 import { SessionProvider, useSession } from "@/context/auth";
 import { NotificationProvider } from "@/context/notification";
+import { RoleProvider } from "@/context/role";
 import { TripProvider } from "@/context/trip";
 import { useRouterNotifications } from "@/hooks/use-router-notifications";
 import "../../global.css";
@@ -60,11 +61,13 @@ function InitialLayout() {
 
   return (
     <PaperProvider theme={paperTheme}>
-      <TripProvider>
-        <NotificationProvider>
-          <RootStack />
-        </NotificationProvider>
-      </TripProvider>
+      <RoleProvider>
+        <TripProvider>
+          <NotificationProvider>
+            <RootStack />
+          </NotificationProvider>
+        </TripProvider>
+      </RoleProvider>
     </PaperProvider>
   );
 }

@@ -10,6 +10,7 @@ import HorizontalLine from "@/components/ui/horizontal-line";
 import InputField from "@/components/ui/input-field";
 import PrimaryButton from "@/components/ui/primary-button";
 import ScreenContainer from "@/components/ui/screen-container";
+import { useRole } from "@/context/role";
 import { supabase } from "@/lib/supabase";
 import { signinData, signinSchema } from "@/schemas/sign-in";
 
@@ -19,6 +20,7 @@ import { signinData, signinSchema } from "@/schemas/sign-in";
  */
 function SigninScreen() {
   const { colors } = useTheme();
+  const { setRole } = useRole();
   const [userType, setUserType] = useState("rider");
 
   // initialise React Hook Form with Zod schema validation
@@ -63,7 +65,11 @@ function SigninScreen() {
     // display the error message if authentication fails
     if (error) {
       Alert.alert(error.message);
+      return;
     }
+
+    // store userType in React context
+    setRole(userType);
   }
 
   return (
