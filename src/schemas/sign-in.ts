@@ -5,7 +5,9 @@ export const signinSchema = z.object({
   email: z.email({
     message: "The email you entered is invalid.",
   }),
-  password: z.string(),
+  password: z.string().min(1, {
+    message: "Password is required.",
+  }),
 });
 
 // Export the inferred type
