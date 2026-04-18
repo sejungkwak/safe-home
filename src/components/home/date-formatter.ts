@@ -13,14 +13,14 @@ export default function DateFormatter(selectedDate?: Date) {
   }
 
   // format date: e.g. 5 April 2026
-  const formattedDate = dateTime.toLocaleDateString("en-GB", {
+  const formattedDate = dateTime.toLocaleDateString("en-IE", {
     day: "numeric",
     month: "long",
     year: "numeric",
   });
 
   // format time: e.g. 13:30
-  const formattedTime = dateTime.toLocaleTimeString([], {
+  const formattedTime = dateTime.toLocaleTimeString("en-IE", {
     hour: "2-digit",
     minute: "2-digit",
   });
