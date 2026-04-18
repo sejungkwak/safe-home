@@ -8,9 +8,12 @@ import { Tabs } from "expo-router";
 import { useColorScheme } from "react-native";
 import { useTheme } from "react-native-paper";
 
+import { useRole } from "@/context/role";
+
 export default function TabLayout() {
   const { colors } = useTheme();
   const colorScheme = useColorScheme();
+  const { role } = useRole();
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
@@ -22,7 +25,9 @@ export default function TabLayout() {
         <Tabs.Screen
           name="home"
           options={{
-            headerShown: false,
+            title: "Ride Requests",
+            tabBarLabel: "Home",
+            headerShown: role !== "rider",
             tabBarIcon: ({ color, focused }) => (
               <Ionicons
                 name={focused ? "home" : "home-outline"}
