@@ -37,8 +37,6 @@ export default async function createNotification({
         .contains("role", ["driver"])
         .not("expo_push_token", "is", null);
 
-      console.log(recipients);
-
       if (recipientsError) throw recipientsError;
 
       // insert a new to the notification table

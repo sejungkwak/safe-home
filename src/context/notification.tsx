@@ -1,4 +1,3 @@
-import * as Notifications from "expo-notifications";
 import React, {
   createContext,
   useContext,
@@ -17,7 +16,6 @@ import { supabase } from "@/lib/supabase";
 // define notification context type
 type NotificationContextType = {
   expoPushToken: string | null;
-  notification: Notifications.Notification | null;
   error: Error | null;
 };
 
@@ -40,38 +38,14 @@ export function useNotification() {
 }
 
 /**
- * Broadcasts the notification context to all components.
- * Manages token registration, notification states, and listeners.
+ * Broadcasts the notification context to all components,
+ * and manages token registration.
  */
 export function NotificationProvider({ children }: PropsWithChildren) {
   const { user } = useSession();
 
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
-  const [notification, setNotification] =
-    useState<Notifications.Notification | null>(null);
   const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    // listen to foreground notification events
-    const notificationListener = Notifications.addNotificationReceivedListener(
-      (notification) => {
-        console.log("🔔 Notification Received: ", notification);
-        setNotification(notification);
-      },
-    );
-
-    // listen to user interactions
-    const responseListener =
-      Notifications.addNotificationResponseReceivedListener((response) => {
-        // TODO redirect user to the appropriate screen
-        console.log("🔔 Notification Response: ", response);
-      });
-
-    return () => {
-      notificationListener.remove();
-      responseListener.remove();
-    };
-  }, []);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -95,9 +69,7 @@ export function NotificationProvider({ children }: PropsWithChildren) {
   }, [user?.id]);
 
   return (
-    <NotificationContext.Provider
-      value={{ expoPushToken, notification, error }}
-    >
+    <NotificationContext.Provider value={{ expoPushToken, error }}>
       {children}
     </NotificationContext.Provider>
   );
