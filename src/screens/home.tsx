@@ -7,10 +7,12 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useTheme } from "react-native-paper";
 
 import Request from "@/components/home/request";
+import RequestList from "@/components/home/request-list";
 import Map from "@/components/map/map";
 import MapSearch from "@/components/map/map-search";
 import ChipButton from "@/components/ui/chip-button";
 import ScreenContainer from "@/components/ui/screen-container";
+import { useRole } from "@/context/role";
 import { useTrip } from "@/context/trip";
 import useUserLocation from "@/hooks/use-user-location";
 
@@ -27,6 +29,7 @@ cssInterop(ChipButton, { className: { target: "style" } });
 export default function HomeScreen() {
   const { colors } = useTheme();
   const router = useRouter();
+  const { role } = useRole();
 
   // retrieve the user's current location and any permission or location error message
   const { errorMsg, location } = useUserLocation();
@@ -58,62 +61,71 @@ export default function HomeScreen() {
 
   return (
     <ScreenContainer>
-      <Map
-        pickUpCoords={origin}
-        dropOffCoords={destination ?? null}
-        onReady={(result) => {
-          setRouteInfo({
-            distance: result.distance,
-            duration: result.duration,
-          });
-        }}
-      />
-      <GestureHandlerRootView className="flex-1">
-        <BottomSheet
-          ref={bottomSheetRef}
-          snapPoints={["50%", "90%"]}
-          keyboardBehavior="fillParent"
-          backgroundStyle={{ backgroundColor: colors.background }}
-          enableDynamicSizing={true}
-          maxDynamicContentSize={300}
-        >
-          <BottomSheetView className="flex-1">
-            {/* origin location */}
-            <MapSearch
-              placeholder="Where from?"
-              icon="circle-slice-8"
-              searchFor="origin"
-              onSelect={setOrigin}
-              onClear={() => setOrigin(null)}
-              defaultValue={origin?.address}
-            />
-            {/* destination location */}
-            <View className="relative">
-              <MapSearch
-                placeholder="Where to?"
-                icon="map-marker-outline"
-                searchFor="destination"
-                onSelect={setDestination}
-                onClear={() => setDestination(null)}
-              />
-              <ChipButton
-                icon="calendar-clock-outline"
-                className="absolute top-2 right-4"
-                disabled={!routeInfo}
-                onPress={() => {
-                  router.push("/booking");
-                }}
-              >
-                Later
-              </ChipButton>
-            </View>
-            {/* TODO Saved addresses for user to select by pressing */}
-            {origin && destination && routeInfo && (
-              <Request distance={routeInfo.distance ?? 0} />
-            )}
-          </BottomSheetView>
-        </BottomSheet>
-      </GestureHandlerRootView>
+      {role === "rider" && (
+        <>
+          <Map
+            pickUpCoords={origin}
+            dropOffCoords={destination ?? null}
+            onReady={(result) => {
+              setRouteInfo({
+                distance: result.distance,
+                duration: result.duration,
+              });
+            }}
+          />
+          <GestureHandlerRootView className="flex-1">
+            <BottomSheet
+              ref={bottomSheetRef}
+              snapPoints={["50%", "90%"]}
+              keyboardBehavior="fillParent"
+              backgroundStyle={{ backgroundColor: colors.background }}
+              enableDynamicSizing={true}
+              maxDynamicContentSize={300}
+            >
+              <BottomSheetView className="flex-1">
+                {/* origin location */}
+                <MapSearch
+                  placeholder="Where from?"
+                  icon="circle-slice-8"
+                  searchFor="origin"
+                  onSelect={setOrigin}
+                  onClear={() => setOrigin(null)}
+                  defaultValue={origin?.address}
+                />
+                {/* destination location */}
+                <View className="relative">
+                  <MapSearch
+                    placeholder="Where to?"
+                    icon="map-marker-outline"
+                    searchFor="destination"
+                    onSelect={setDestination}
+                    onClear={() => setDestination(null)}
+                  />
+                  <ChipButton
+                    icon="calendar-clock-outline"
+                    className="absolute top-2 right-4"
+                    disabled={!routeInfo}
+                    onPress={() => {
+                      router.push("/booking");
+                    }}
+                  >
+                    Later
+                  </ChipButton>
+                </View>
+                {/* TODO Saved addresses for user to select by pressing */}
+                {origin && destination && routeInfo && (
+                  <Request distance={routeInfo.distance ?? 0} />
+                )}
+              </BottomSheetView>
+            </BottomSheet>
+          </GestureHandlerRootView>
+        </>
+      )}
+      {role === "driver" && (
+        <>
+          <RequestList />
+        </>
+      )}
     </ScreenContainer>
   );
 }
