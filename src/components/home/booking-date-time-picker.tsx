@@ -27,7 +27,7 @@ export default function BookingDateTimePicker({
 
   const { dateTime, setDateTime } = useTrip();
 
-  const [date, setDate] = useState(pickerType === "date" ? minSelectable : now);
+  const [date, setDate] = useState(minSelectable);
 
   const maxSelectable = new Date(now);
   maxSelectable.setDate(now.getDate() + 90);
