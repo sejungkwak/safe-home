@@ -8,16 +8,23 @@ import { supabase } from "./supabase";
  * which triggers Supabase webhook for sending notification.
  */
 export default async function createNotification({
-  userId,
+  riderId,
+  driverId,
+  pushToken,
   origin,
   destination,
   dateTime,
   notificationType,
   tripId,
-}: TripParams & { notificationType: string; tripId: string }) {
+}: TripParams & {
+  driverId?: string;
+  pushToken?: string;
+  notificationType: string;
+  tripId: string;
+}) {
   // return if an argument value is null
   if (
-    !userId ||
+    !riderId ||
     !origin ||
     !destination ||
     !dateTime ||
@@ -42,7 +49,7 @@ export default async function createNotification({
       // insert a new to the notification table
       for (const recipient of recipients) {
         const { error } = await supabase.from("notification").insert({
-          user_id: userId,
+          user_id: riderId,
           recipient_id: recipient.id,
           recipient_token: recipient.expo_push_token,
           title: "A new ride request",
@@ -53,6 +60,23 @@ export default async function createNotification({
 
         if (error) throw error;
       }
+      break;
+    }
+
+    case "driver_accepted": {
+      const { error } = await supabase.from("notification").insert({
+        user_id: driverId,
+        recipient_id: riderId,
+        recipient_token: pushToken,
+        title: "Request accepted",
+        body: "Please confirm your trip to finalise.",
+        type: "driver_accepted",
+        trip_id: tripId,
+      });
+
+      if (error) throw error;
+
+      break;
     }
 
     default:

@@ -40,7 +40,7 @@ export default function Request({ distance }: { distance: number }) {
    */
   async function onSubmit() {
     const newTrip = await createTrip({
-      userId: userId,
+      riderId: userId,
       origin: origin,
       destination: destination,
       dateTime: dateTime.current,
@@ -48,7 +48,7 @@ export default function Request({ distance }: { distance: number }) {
     });
 
     await createNotification({
-      userId: userId,
+      riderId: userId,
       origin: origin,
       destination: destination,
       dateTime: dateTime.current,

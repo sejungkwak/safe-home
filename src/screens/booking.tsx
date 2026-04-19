@@ -37,7 +37,7 @@ export default function BookingScreen() {
    */
   async function onSubmit() {
     const newTrip = await createTrip({
-      userId: userId,
+      riderId: userId,
       origin: origin,
       destination: destination,
       dateTime: dateTime,
@@ -45,7 +45,7 @@ export default function BookingScreen() {
     });
 
     await createNotification({
-      userId: userId,
+      riderId: userId,
       origin: origin,
       destination: destination,
       dateTime: dateTime,
