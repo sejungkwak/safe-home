@@ -3,7 +3,6 @@ import { Text, View } from "react-native";
 import { Icon, useTheme } from "react-native-paper";
 
 import BookingDateTimePicker from "@/components/home/booking-date-time-picker";
-import DateFormatter from "@/components/home/date-formatter";
 import ChipButton from "@/components/ui/chip-button";
 import PrimaryButton from "@/components/ui/primary-button";
 import ScreenContainer from "@/components/ui/screen-container";
@@ -11,6 +10,7 @@ import { useSession } from "@/context/auth";
 import { useTrip } from "@/context/trip";
 import createNotification from "@/lib/create-notification";
 import createTrip from "@/lib/create-trip";
+import formatDate from "@/lib/format-date";
 
 /**
  * Displays date and time picker buttons and the fare information
@@ -25,7 +25,7 @@ export default function BookingScreen() {
   const [showTimePicker, setShowTimePicker] = useState(false);
 
   // set the default date and time to the formatted current date and time
-  const { formattedDate, formattedTime } = DateFormatter();
+  const { formattedDate, formattedTime } = formatDate();
   const [date, setDate] = useState<string>(formattedDate);
   const [time, setTime] = useState<string>(formattedTime);
 

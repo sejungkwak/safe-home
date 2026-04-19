@@ -1,7 +1,7 @@
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useState } from "react";
 import { Button, Platform } from "react-native";
-import DateFormatter from "./date-formatter";
+import formatDate from "../../lib/format-date";
 
 import { useTrip } from "@/context/trip";
 
@@ -62,7 +62,7 @@ export default function BookingDateTimePicker({
       setDateTime(finalDateTime);
 
       // convert date and time to string
-      const { formattedDate, formattedTime } = DateFormatter(selectedDate);
+      const { formattedDate, formattedTime } = formatDate(selectedDate);
       selectedValue(pickerType === "date" ? formattedDate : formattedTime);
     }
   }
