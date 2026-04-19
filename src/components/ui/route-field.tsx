@@ -6,8 +6,8 @@ export default function RouteField({
   origin,
   destination,
 }: {
-  origin: string;
-  destination: string;
+  origin: string | null;
+  destination: string | null;
 }) {
   const theme = useTheme();
 
@@ -54,7 +54,7 @@ export default function RouteField({
           style={{ flex: 1 }}
         >
           <Text style={{ color: theme.colors.onSurface }}>
-            {destination.replace(/, Ireland$/, "")}
+            {destination?.replace(/, Ireland$/, "")}
           </Text>
         </ScrollView>
       </View>
