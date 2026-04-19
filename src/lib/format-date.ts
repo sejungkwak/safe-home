@@ -2,7 +2,7 @@
  * Convert the date and time one hour from now which is earliest
  * available booking time, or the passed values to a formatted string.
  */
-export default function DateFormatter(selectedDate?: Date) {
+export default function formatDate(selectedDate?: Date) {
   // use the selected date if provided, otherwise default to one hour from now
   let dateTime: Date;
   if (selectedDate) {

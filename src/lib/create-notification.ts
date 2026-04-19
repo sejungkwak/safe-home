@@ -1,4 +1,4 @@
-import DateFormatter from "@/components/home/date-formatter";
+import formatDate from "@/lib/format-date";
 import { TripParams } from "./create-trip";
 import { supabase } from "./supabase";
 
@@ -26,7 +26,7 @@ export default async function createNotification({
   )
     return;
 
-  const { formattedDate, formattedTime } = DateFormatter(dateTime);
+  const { formattedDate, formattedTime } = formatDate(dateTime);
 
   switch (notificationType) {
     case "ride_requested": {
