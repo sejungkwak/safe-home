@@ -7,33 +7,42 @@ export type Coords = {
 };
 
 export type TripParams = {
-    userId: string | undefined;
-    origin: Coords | null;
-    destination: Coords | null;
-    dateTime: Date | null;
-    fare: number | null;
-}
+  userId: string | undefined;
+  origin: Coords | null;
+  destination: Coords | null;
+  dateTime: Date | null;
+  fare: number | null;
+};
 
 /**
  * Handles a ride request or booking confirmation button press.
  * Creates new data entry for the trip table.
- * 
+ *
  * @returns Updated trip record from database
  */
-export default async function createTrip ({userId, origin, destination, dateTime, fare}: TripParams) {
+export default async function createTrip({
+  userId,
+  origin,
+  destination,
+  dateTime,
+  fare,
+}: TripParams) {
+  if (!userId || !origin || !destination || !dateTime || fare === null) return;
 
-    if (!userId || !origin || !destination || !dateTime || fare === null) return;
+  // insert a new entry to the trip table
+  const { data, error } = await supabase
+    .from("trip")
+    .insert({
+      rider_id: userId,
+      start_location: origin,
+      end_location: destination,
+      start_time: dateTime,
+      fare: fare,
+    })
+    .select()
+    .single();
 
-    // insert a new entry to the trip table
-    const { data, error } = await supabase.from("trip").insert({
-        rider_id: userId,
-        start_location: origin.address,
-        end_location: destination.address,
-        start_time: dateTime,
-        fare: fare,
-    }).select().single();
+  if (error) throw error;
 
-    if (error) throw error;
-
-    return data;
+  return data;
 }
