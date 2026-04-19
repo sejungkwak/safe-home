@@ -88,6 +88,15 @@ function RootStack() {
             headerBackButtonDisplayMode: "minimal",
           }}
         />
+        <Stack.Screen
+          name="trip-details"
+          options={{
+            headerTitle: "",
+            headerShadowVisible: false,
+            headerBackVisible: true,
+            headerBackButtonDisplayMode: "minimal",
+          }}
+        />
       </Stack.Protected>
     </Stack>
   );

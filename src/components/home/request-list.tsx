@@ -1,7 +1,9 @@
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView } from "react-native";
 import { Text } from "react-native-paper";
 
+import { Coords } from "@/lib/create-trip";
 import { supabase } from "@/lib/supabase";
 import TripCard from "../ui/trip-card";
 
@@ -9,12 +11,13 @@ import TripCard from "../ui/trip-card";
  * Retrieves and displays a list of pending ride requests from database
  */
 export default function RequestList() {
+  const router = useRouter();
   const [trips, setTrips] = useState<
     {
       id: string;
       rider_id: string;
-      start_location: string;
-      end_location: string;
+      start_location: Coords;
+      end_location: Coords;
       start_time: Date;
       fare: number;
       status: string;
@@ -77,14 +80,24 @@ export default function RequestList() {
       {trips.length > 0 && (
         <>
           {trips.map((trip) => (
-            // TODO redirect to the details screen after creating it
-            <Pressable key={trip.id} onPress={() => {}}>
+            <Pressable
+              key={trip.id}
+              // redirect the driver to the details screen
+              onPress={() => {
+                router.push({
+                  pathname: "/trip-details",
+                  params: {
+                    id: trip.id,
+                  },
+                });
+              }}
+            >
               <TripCard
                 key={trip.id}
                 pickupTiming={trip.leftText}
                 pickupTime={trip.start_time.toLocaleString()}
-                origin={trip.start_location}
-                destination={trip.end_location}
+                origin={trip.start_location.address}
+                destination={trip.end_location.address}
                 fare={trip.fare}
               />
             </Pressable>
