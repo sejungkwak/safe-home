@@ -19,7 +19,12 @@ export default function PrimaryButton({
       buttonColor={outlined ? colors.background : colors.primary}
       textColor={outlined ? colors.primary : colors.background}
       style={[
-        { flex: 1, alignItems: "center", justifyContent: "center" },
+        {
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: 40,
+        },
         outlined && {
           borderColor: colors.primary,
           borderWidth: 1,
