@@ -4,10 +4,10 @@ import { useEffect, useRef } from "react";
 import { Text, View } from "react-native";
 import { Icon, useTheme } from "react-native-paper";
 
+import createNotification from "@/api/notifications/create-notification";
+import createTrip from "@/api/trips/create-trip";
 import { useSession } from "@/context/auth";
 import { useTrip } from "@/context/trip";
-import createNotification from "@/lib/create-notification";
-import createTrip from "@/lib/create-trip";
 import ChipButton from "../ui/chip-button";
 import PrimaryButton from "../ui/primary-button";
 

@@ -2,14 +2,14 @@ import { useState } from "react";
 import { Text, View } from "react-native";
 import { Icon, useTheme } from "react-native-paper";
 
+import createNotification from "@/api/notifications/create-notification";
+import createTrip from "@/api/trips/create-trip";
 import BookingDateTimePicker from "@/components/home/booking-date-time-picker";
 import ChipButton from "@/components/ui/chip-button";
 import PrimaryButton from "@/components/ui/primary-button";
 import ScreenContainer from "@/components/ui/screen-container";
 import { useSession } from "@/context/auth";
 import { useTrip } from "@/context/trip";
-import createNotification from "@/lib/create-notification";
-import createTrip from "@/lib/create-trip";
 import formatDate from "@/lib/format-date";
 
 /**

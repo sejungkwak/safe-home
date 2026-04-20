@@ -1,6 +1,6 @@
 import formatDate from "@/lib/format-date";
-import { TripParams } from "./create-trip";
-import { supabase } from "./supabase";
+import { supabase } from "../../lib/supabase";
+import { TripParams } from "../trips/create-trip";
 
 /**
  * Handles a ride request or booking confirmation button press.
@@ -87,6 +87,22 @@ export default async function createNotification({
         title: "Trip cancelled",
         body: `Your rider cancelled the trip:\nFrom: ${origin.address}\nTo: ${destination.address}\nOn: ${formattedDate} at ${formattedTime}`,
         type: "rider_cancelled",
+        trip_id: tripId,
+      });
+
+      if (error) throw error;
+
+      break;
+    }
+
+    case "rider_accepted": {
+      const { error } = await supabase.from("notification").insert({
+        user_id: riderId,
+        recipient_id: driverId,
+        recipient_token: pushToken,
+        title: "Trip confirmed",
+        body: `Your rider confirmed the trip with you for ${formattedDate} at ${formattedTime}`,
+        type: "rider_accepted",
         trip_id: tripId,
       });
 

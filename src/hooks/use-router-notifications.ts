@@ -43,11 +43,11 @@ function onNotificationRedirect(
       break;
 
     case "rider_accepted":
-      // TODO redirect the driver to the home screen with the map!
+      // redirect the driver to the home screen with the trip details
       router.push({
-        pathname: "/",
+        pathname: "/trip-details",
         params: {
-          tripId: notifData.trip_id,
+          id: notifData.trip_id,
         },
       });
       break;
