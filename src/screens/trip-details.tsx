@@ -7,6 +7,8 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useTheme } from "react-native-paper";
 
 import createNotification from "@/api/notifications/create-notification";
+import createRating from "@/api/ratings/create-rating";
+import fetchRating from "@/api/ratings/fetch-rating";
 import cancelTrip from "@/api/trips/cancel-trip";
 import { Coords } from "@/api/trips/create-trip";
 import updateTrip from "@/api/trips/update-trip";
@@ -14,6 +16,7 @@ import Map from "@/components/map/map";
 import BaseModal from "@/components/ui/base-modal";
 import ChipButton from "@/components/ui/chip-button";
 import PrimaryButton from "@/components/ui/primary-button";
+import Ratings from "@/components/ui/ratings";
 import RouteField from "@/components/ui/route-field";
 import ScreenContainer from "@/components/ui/screen-container";
 import TripInfoItem from "@/components/ui/trip-info-item";
@@ -52,12 +55,13 @@ export default function TripDetails() {
     useState<boolean>(false);
   const [showRiderConfirmModal, setShowRiderConfirmModal] =
     useState<boolean>(false);
+  const [hasRating, setHasRating] = useState<boolean>(false);
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   // retrieve the trip information based on the id
   useEffect(() => {
     let isMounted = true;
-    const getTripData = async () => {
+    async function getTripData() {
       if (!id) return;
 
       const { data, error } = await supabase
@@ -115,7 +119,7 @@ export default function TripDetails() {
         setFare(data.fare);
         setStatus(data.status);
       }
-    };
+    }
 
     getTripData();
 
@@ -123,6 +127,32 @@ export default function TripDetails() {
       isMounted = false;
     };
   }, [id]);
+
+  useEffect(() => {
+    let isMounted = true;
+    // check if the rider has already given a rating
+    // if they have, the rating widget is read-only.
+    async function getRating() {
+      if (user?.id === riderId) {
+        if (!driverId || !isMounted) return;
+        const data = await fetchRating(driverId, id);
+        if (data.length === 0) setHasRating(false);
+        if (data.length > 0) setHasRating(true);
+      }
+      if (user?.id === driverId) {
+        if (!riderId || !isMounted) return;
+        const data = await fetchRating(riderId, id);
+        if (data.length === 0) setHasRating(false);
+        if (data.length > 0) setHasRating(true);
+      }
+    }
+
+    getRating();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [driverId, riderId, user?.id, id]);
 
   /**
    * Handles Accept button press by a driver:
@@ -213,6 +243,19 @@ export default function TripDetails() {
     setShowRiderConfirmModal(true);
   }
 
+  /**
+   * Handles a rating submission button press:
+   * creates a new data entry in the rating table
+   * @param rating The rating a user has given
+   */
+  async function handleRatingSubmit(rating: number) {
+    if (!user || !driverId || !riderId) return;
+
+    if (user.id === riderId) {
+      await createRating(id, driverId, rating);
+    }
+  }
+
   return (
     <ScreenContainer>
       {showAcceptModal && (
@@ -295,37 +338,61 @@ export default function TripDetails() {
             )}
 
             {/* Rider view */}
+            {user?.id === riderId && (
+              <ChipButton
+                icon="account-circle-outline"
+                // TODO display driver info on press
+                onPress={() => {
+                  console.log("driver button");
+                }}
+              >
+                {driverName}
+              </ChipButton>
+            )}
+
             {user?.id === riderId && status === "driver_accepted" && (
-              <>
-                <ChipButton
-                  icon="account-circle-outline"
-                  // TODO display driver info on press
-                  onPress={() => {
-                    console.log("driver button");
-                  }}
+              <View className="flex-row gap-4">
+                <PrimaryButton mode="outlined" onPress={handleRiderCancel}>
+                  Cancel Request
+                </PrimaryButton>
+                <PrimaryButton
+                  onPress={handleRiderConfirm}
+                  style={{ flex: 1, justifyContent: "center" }}
                 >
-                  {driverName}
-                </ChipButton>
-                <View className="flex-row gap-4">
-                  <PrimaryButton mode="outlined" onPress={handleRiderCancel}>
-                    Cancel Request
-                  </PrimaryButton>
-                  <PrimaryButton
-                    onPress={handleRiderConfirm}
-                    style={{ flex: 1, justifyContent: "center" }}
-                  >
-                    Confirm
-                  </PrimaryButton>
-                </View>
+                  Confirm
+                </PrimaryButton>
+              </View>
+            )}
+
+            {user?.id === riderId &&
+              (status === "rider_accepted" || status === "driver_accepted") && (
+                <PrimaryButton mode="outlined" onPress={handleRiderCancel}>
+                  Cancel Request
+                </PrimaryButton>
+              )}
+
+            {user?.id === riderId && status === "completed" && (
+              <>
+                <TripInfoItem icon="wallet-outline" infoText={`€${fare}`} />
+                <TripInfoItem
+                  icon="calendar-outline"
+                  infoText={pickupTime ?? ""}
+                />
+                {hasRating && (
+                  <Ratings
+                    name={driverName ?? "the driver"}
+                    readOnly={true}
+                  ></Ratings>
+                )}
+                {!hasRating && (
+                  <Ratings
+                    name={driverName ?? "the driver"}
+                    readOnly={false}
+                    onFinish={handleRatingSubmit}
+                  ></Ratings>
+                )}
               </>
             )}
-            {/* TODO driver name with button "Cancel" and "Confirm" */}
-
-            {user?.id === riderId && status === "rider_accepted"}
-            {/* TODO "Cancel trip" button */}
-
-            {user?.id === riderId && status === "completed"}
-            {/* TODO rating option */}
           </BottomSheetView>
         </BottomSheet>
       </GestureHandlerRootView>
