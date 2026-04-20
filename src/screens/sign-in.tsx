@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Alert, View } from "react-native";
+import { Alert, ScrollView, View } from "react-native";
 import { HelperText, RadioButton, Text, useTheme } from "react-native-paper";
 
 import GoogleSignIn from "@/components/auth/google-sign-in";
@@ -74,6 +74,7 @@ function SigninScreen() {
 
   return (
     <ScreenContainer>
+      <ScrollView>
       <View className="mb-4">
         <RadioButton.Group
           onValueChange={(value) => setUserType(value)}
@@ -167,6 +168,7 @@ function SigninScreen() {
           </Text>
         </Link>
       </View>
+      </ScrollView>
     </ScreenContainer>
   );
 }
