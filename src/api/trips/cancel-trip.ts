@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { supabase } from "../../lib/supabase";
 
 /**
  * Updates the status column in the trip table based on who cancelled it.

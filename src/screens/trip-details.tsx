@@ -6,6 +6,10 @@ import { Alert, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useTheme } from "react-native-paper";
 
+import createNotification from "@/api/notifications/create-notification";
+import cancelTrip from "@/api/trips/cancel-trip";
+import { Coords } from "@/api/trips/create-trip";
+import updateTrip from "@/api/trips/update-trip";
 import Map from "@/components/map/map";
 import BaseModal from "@/components/ui/base-modal";
 import ChipButton from "@/components/ui/chip-button";
@@ -14,9 +18,6 @@ import RouteField from "@/components/ui/route-field";
 import ScreenContainer from "@/components/ui/screen-container";
 import TripInfoItem from "@/components/ui/trip-info-item";
 import { useSession } from "@/context/auth";
-import cancelTrip from "@/lib/cancel-trip";
-import createNotification from "@/lib/create-notification";
-import { Coords } from "@/lib/create-trip";
 import formatDate from "@/lib/format-date";
 import { supabase } from "@/lib/supabase";
 
@@ -48,6 +49,8 @@ export default function TripDetails() {
 
   const [showAcceptModal, setShowAcceptModal] = useState<boolean>(false);
   const [showRiderCancelModal, setShowRiderCancelModal] =
+    useState<boolean>(false);
+  const [showRiderConfirmModal, setShowRiderConfirmModal] =
     useState<boolean>(false);
   const bottomSheetRef = useRef<BottomSheet>(null);
 
@@ -160,7 +163,7 @@ export default function TripDetails() {
    * and creates a new data entry for the notification table.
    */
   async function handleRiderCancel() {
-    // update trip table
+    // update the trip table
     const data = await cancelTrip(id, "rider");
 
     if (!data) Alert.alert("Something went wrong", "Please try again.");
@@ -181,6 +184,35 @@ export default function TripDetails() {
     setShowRiderCancelModal(true);
   }
 
+  /**
+   * Handles Confirm Request button press by a rider:
+   * Updates the matching row in the trip table,
+   * creates a new data entry for the notification table,
+   * and show a confirmation modal.
+   */
+  async function handleRiderConfirm() {
+    // update the trip table
+    const data = await updateTrip(id, "rider_accepted");
+
+    if (!data) Alert.alert("Something went wrong", "Please try again.");
+
+    // create a new notification data entry
+    await createNotification({
+      riderId: riderId ?? "",
+      driverId: driverId ?? "",
+      pushToken: driverPushToken ?? "",
+      origin: origin,
+      destination: destination,
+      dateTime: dateTime,
+      notificationType: "rider_accepted",
+      tripId: id,
+      fare: fare,
+    });
+
+    // show modal
+    setShowRiderConfirmModal(true);
+  }
+
   return (
     <ScreenContainer>
       {showAcceptModal && (
@@ -194,6 +226,13 @@ export default function TripDetails() {
         <BaseModal
           title="Request cancelled"
           body="This trip request has been cancelled successfully."
+          screen="/home"
+        />
+      )}
+      {showRiderConfirmModal && (
+        <BaseModal
+          title="Request confirmed"
+          body="We're notifying the driver now."
           screen="/home"
         />
       )}
@@ -216,7 +255,8 @@ export default function TripDetails() {
             />
 
             {/* Driver view */}
-            {!driverName && status === "pending" && user?.id !== riderId && (
+            {((!driverName && status === "pending" && user?.id !== riderId) ||
+              (user?.id === driverId && status === "rider_accepted")) && (
               <>
                 <ChipButton
                   icon="account-circle-outline"
@@ -247,12 +287,14 @@ export default function TripDetails() {
                   icon="calendar-outline"
                   infoText={pickupTime ?? ""}
                 />
-                <PrimaryButton onPress={handleAccept}>Accept</PrimaryButton>
               </>
             )}
 
-            {/* Rider view */}
+            {!driverName && status === "pending" && user?.id !== riderId && (
+              <PrimaryButton onPress={handleAccept}>Accept</PrimaryButton>
+            )}
 
+            {/* Rider view */}
             {user?.id === riderId && status === "driver_accepted" && (
               <>
                 <ChipButton
@@ -268,7 +310,9 @@ export default function TripDetails() {
                   <PrimaryButton mode="outlined" onPress={handleRiderCancel}>
                     Cancel Request
                   </PrimaryButton>
-                  <PrimaryButton>Confirm</PrimaryButton>
+                  <PrimaryButton onPress={handleRiderConfirm}>
+                    Confirm
+                  </PrimaryButton>
                 </View>
               </>
             )}

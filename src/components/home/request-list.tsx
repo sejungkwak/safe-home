@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Pressable, ScrollView } from "react-native";
 import { Text } from "react-native-paper";
 
-import { Coords } from "@/lib/create-trip";
+import { Coords } from "@/api/trips/create-trip";
 import { supabase } from "@/lib/supabase";
 import TripCard from "../ui/trip-card";
 
