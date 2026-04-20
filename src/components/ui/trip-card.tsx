@@ -8,7 +8,7 @@ export default function TripCard(props: { [key: string]: any }) {
         <View className="flex-row gap-4">
           <View className="items-center justify-center">
             {props.pickupTiming && <Text>{props.pickupTiming}</Text>}
-            {props.icon && <Icon source="car" size={24}></Icon>}
+            {props.icon && <Icon source={props.icon} size={24}></Icon>}
           </View>
 
           <View className="flex-1 gap-2">
