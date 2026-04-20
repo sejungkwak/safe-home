@@ -106,6 +106,8 @@ function RootStack() {
             headerShadowVisible: false,
             headerBackVisible: true,
             headerBackButtonDisplayMode: "minimal",
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.onBackground,
           }}
         />
       </Stack.Protected>
