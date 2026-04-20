@@ -310,7 +310,10 @@ export default function TripDetails() {
                   <PrimaryButton mode="outlined" onPress={handleRiderCancel}>
                     Cancel Request
                   </PrimaryButton>
-                  <PrimaryButton onPress={handleRiderConfirm}>
+                  <PrimaryButton
+                    onPress={handleRiderConfirm}
+                    style={{ flex: 1, justifyContent: "center" }}
+                  >
                     Confirm
                   </PrimaryButton>
                 </View>
