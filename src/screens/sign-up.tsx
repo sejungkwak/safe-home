@@ -302,6 +302,7 @@ function SignUpScreen() {
                 <View>
                   <PhoneInput
                     defaultCountry="IE"
+                    placeholder="Mobile Number"
                     value={value}
                     onChangePhoneNumber={onChange}
                     selectedCountry={selectedCountry}
