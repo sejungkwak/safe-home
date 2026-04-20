@@ -1,17 +1,20 @@
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { cssInterop } from "nativewind";
 import React, { useEffect, useRef, useState } from "react";
+import { Alert, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { Button, Modal, Portal, Text, useTheme } from "react-native-paper";
+import { useTheme } from "react-native-paper";
 
 import Map from "@/components/map/map";
+import BaseModal from "@/components/ui/base-modal";
 import ChipButton from "@/components/ui/chip-button";
 import PrimaryButton from "@/components/ui/primary-button";
 import RouteField from "@/components/ui/route-field";
 import ScreenContainer from "@/components/ui/screen-container";
 import TripInfoItem from "@/components/ui/trip-info-item";
 import { useSession } from "@/context/auth";
+import cancelTrip from "@/lib/cancel-trip";
 import createNotification from "@/lib/create-notification";
 import { Coords } from "@/lib/create-trip";
 import formatDate from "@/lib/format-date";
@@ -22,7 +25,6 @@ cssInterop(BottomSheetView, { className: { target: "style" } });
 cssInterop(ChipButton, { className: { target: "style" } });
 
 export default function TripDetails() {
-  const router = useRouter();
   const { user } = useSession();
   const { colors } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -35,6 +37,7 @@ export default function TripDetails() {
   const [transmission, setTransmission] = useState<string | null>(null);
   const [driverId, setDriverId] = useState<string | null>(null);
   const [driverName, setDriverName] = useState<string | null>(null);
+  const [driverPushToken, setDriverPushToken] = useState<string | null>(null);
   const [pickupTime, setPickupTime] = useState<string | null>(null);
   const [dateTime, setDateTime] = useState<Date | null>(null);
   const [origin, setOrigin] = useState<Coords | null>(null);
@@ -44,12 +47,16 @@ export default function TripDetails() {
   const [distance, setDistance] = useState<number | null>(null);
 
   const [showAcceptModal, setShowAcceptModal] = useState<boolean>(false);
+  const [showRiderCancelModal, setShowRiderCancelModal] =
+    useState<boolean>(false);
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   // retrieve the trip information based on the id
   useEffect(() => {
     let isMounted = true;
     const getTripData = async () => {
+      if (!id) return;
+
       const { data, error } = await supabase
         .from("trip")
         .select("*")
@@ -76,7 +83,7 @@ export default function TripDetails() {
       if (data.status !== "pending") {
         const { data: driverData, error: driverError } = await supabase
           .from("profile")
-          .select("id, name")
+          .select("id, name, expo_push_token")
           .eq("id", data.driver_id)
           .single();
 
@@ -84,13 +91,14 @@ export default function TripDetails() {
         if (driverData && isMounted) {
           setDriverId(driverData.id);
           setDriverName(driverData.name);
+          setDriverPushToken(driverData.expo_push_token);
         }
       }
 
       if (isMounted) {
         const start_time = new Date(data.start_time);
         const { formattedDate, formattedTime } = formatDate(start_time);
-        const stringifyTime = formattedDate + "  " + formattedTime;
+        const stringifiedTime = formattedDate + "  " + formattedTime;
 
         setRiderId(riderData.id);
         setRiderName(riderData.name);
@@ -99,7 +107,7 @@ export default function TripDetails() {
         setTransmission(data.vehicle?.transmission_type);
         setOrigin(data.start_location);
         setDestination(data.end_location);
-        setPickupTime(stringifyTime);
+        setPickupTime(stringifiedTime);
         setDateTime(start_time);
         setFare(data.fare);
         setStatus(data.status);
@@ -114,10 +122,9 @@ export default function TripDetails() {
   }, [id]);
 
   /**
-   * Handles Accept button press by a driver,
-   * updates the matching row in the trip table,
-   * and creates a new data entry for the notification table
-   * by calling createNotification.
+   * Handles Accept button press by a driver:
+   * Updates the matching row in the trip table,
+   * and creates a new data entry for the notification table.
    */
   async function handleAccept() {
     // update trip table
@@ -147,35 +154,48 @@ export default function TripDetails() {
     });
   }
 
+  /**
+   * Handles Cancel Request button press by a rider:
+   * Updates the matching row in the trip table,
+   * and creates a new data entry for the notification table.
+   */
+  async function handleRiderCancel() {
+    // update trip table
+    const data = await cancelTrip(id, "rider");
+
+    if (!data) Alert.alert("Something went wrong", "Please try again.");
+
+    // create a new notification data entry
+    await createNotification({
+      riderId: riderId ?? "",
+      driverId: driverId ?? "",
+      pushToken: driverPushToken ?? "",
+      origin: origin,
+      destination: destination,
+      dateTime: dateTime,
+      notificationType: "rider_cancelled",
+      tripId: id,
+      fare: fare,
+    });
+
+    setShowRiderCancelModal(true);
+  }
+
   return (
     <ScreenContainer>
       {showAcceptModal && (
-        <Portal>
-          <Modal
-            visible={true}
-            dismissable={false}
-            contentContainerStyle={{
-              backgroundColor: colors.background,
-              padding: 20,
-              width: "90%",
-              borderRadius: 10,
-              alignSelf: "center",
-            }}
-          >
-            <Text variant="headlineSmall" style={{ textAlign: "center" }}>
-              Acceptance received
-            </Text>
-            <Text
-              variant="bodyMedium"
-              style={{ marginTop: 10, marginBottom: 16, textAlign: "center" }}
-            >
-              We&apos;re notifying the rider now.
-            </Text>
-            <Button mode="contained" onPress={() => router.replace("/home")}>
-              OK
-            </Button>
-          </Modal>
-        </Portal>
+        <BaseModal
+          title="Acceptance received"
+          body="We're notifying the rider now."
+          screen="/home"
+        />
+      )}
+      {showRiderCancelModal && (
+        <BaseModal
+          title="Request cancelled"
+          body="This trip request has been cancelled successfully."
+          screen="/home"
+        />
       )}
       <Map
         pickUpCoords={origin}
@@ -233,7 +253,25 @@ export default function TripDetails() {
 
             {/* Rider view */}
 
-            {user?.id === riderId && status === "driver_accepted"}
+            {user?.id === riderId && status === "driver_accepted" && (
+              <>
+                <ChipButton
+                  icon="account-circle-outline"
+                  // TODO display driver info on press
+                  onPress={() => {
+                    console.log("driver button");
+                  }}
+                >
+                  {driverName}
+                </ChipButton>
+                <View className="flex-row gap-4">
+                  <PrimaryButton mode="outlined" onPress={handleRiderCancel}>
+                    Cancel Request
+                  </PrimaryButton>
+                  <PrimaryButton>Confirm</PrimaryButton>
+                </View>
+              </>
+            )}
             {/* TODO driver name with button "Cancel" and "Confirm" */}
 
             {user?.id === riderId && status === "rider_accepted"}

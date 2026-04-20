@@ -18,13 +18,14 @@ export default function PrimaryButton({
       labelStyle={{ fontSize: 18, height: 25 }}
       buttonColor={outlined ? colors.background : colors.primary}
       textColor={outlined ? colors.primary : colors.background}
-      style={
+      style={[
+        { flex: 1, alignItems: "center", justifyContent: "center" },
         outlined && {
           borderColor: colors.primary,
           borderWidth: 1,
           paddingBlock: 4,
-        }
-      }
+        },
+      ]}
       {...props}
     >
       {children}

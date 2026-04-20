@@ -14,7 +14,7 @@ type NotificationType =
 
 type NotificationData = {
   type: NotificationType;
-  tripId?: string;
+  trip_id?: string;
 };
 
 /**
@@ -29,45 +29,45 @@ function onNotificationRedirect(
   switch (notifData.type) {
     // redirect the driver to the home screen with request lists
     case "ride_requested":
-      router.navigate("/");
+      router.push("/");
       break;
 
     case "driver_accepted":
-      // TODO redirect the rider to the home screen with driver details
-      router.navigate({
-        pathname: "/",
+      // redirect the rider to the home screen with driver details
+      router.push({
+        pathname: "/trip-details",
         params: {
-          tripId: "",
+          id: notifData.trip_id,
         },
       });
       break;
 
     case "rider_accepted":
       // TODO redirect the driver to the home screen with the map!
-      router.navigate({
+      router.push({
         pathname: "/",
         params: {
-          tripId: "",
+          tripId: notifData.trip_id,
         },
       });
       break;
 
     case "driver_cancelled":
       // TODO redirect the rider to the home screen
-      router.navigate({
+      router.push({
         pathname: "/",
         params: {
-          tripId: "",
+          tripId: notifData.trip_id,
         },
       });
       break;
 
     case "rider_cancelled":
       // TODO redirect the driver to the home screen
-      router.navigate({
+      router.push({
         pathname: "/",
         params: {
-          tripId: "",
+          tripId: notifData.trip_id,
         },
       });
       break;
