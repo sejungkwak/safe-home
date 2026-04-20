@@ -66,8 +66,8 @@ function TripsScreen() {
             (trip) =>
               trip.start_time &&
               new Date(trip.start_time) >= now &&
-              (trip.status !== "driver_cancelled" ||
-                trip.status !== "rider_cancelled"),
+              trip.status !== "driver_cancelled" &&
+              trip.status !== "rider_cancelled",
           )
           .map((trip) => ({ ...trip, ...formatStartDate(trip.start_time) })),
       );
