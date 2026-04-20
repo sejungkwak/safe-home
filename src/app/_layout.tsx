@@ -1,7 +1,12 @@
 import * as Notifications from "expo-notifications";
 import { Stack } from "expo-router";
 import { useColorScheme } from "react-native";
-import { MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper";
+import {
+  MD3DarkTheme,
+  MD3LightTheme,
+  PaperProvider,
+  useTheme,
+} from "react-native-paper";
 
 import { Colors } from "@/constants/theme";
 import { SessionProvider, useSession } from "@/context/auth";
@@ -57,6 +62,8 @@ export default function RootLayout() {
  */
 function RootStack() {
   const { user, initialised } = useSession();
+  const { colors } = useTheme();
+
   return (
     <Stack>
       <Stack.Protected guard={!initialised || !user}>
@@ -66,6 +73,8 @@ function RootStack() {
             headerTitle: "Sign In",
             headerShadowVisible: false,
             headerBackVisible: false,
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.onBackground,
           }}
         />
         <Stack.Screen
@@ -74,6 +83,8 @@ function RootStack() {
             headerTitle: "Sign Up",
             headerShadowVisible: false,
             headerBackVisible: false,
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.onBackground,
           }}
         />
       </Stack.Protected>
