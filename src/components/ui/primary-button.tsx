@@ -21,8 +21,6 @@ export default function PrimaryButton({
       style={[
         {
           flex: 1,
-          alignItems: "center",
-          justifyContent: "center",
           minHeight: 40,
         },
         outlined && {
