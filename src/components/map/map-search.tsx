@@ -34,6 +34,8 @@ export default function MapSearch({
   useEffect(() => {
     if (props.defaultValue) {
       placesRef.current?.setAddressText(props.defaultValue);
+    } else {
+      placesRef.current?.clear();
     }
   }, [props.defaultValue]);
 

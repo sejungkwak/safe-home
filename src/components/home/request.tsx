@@ -1,5 +1,5 @@
 import { Link } from "expo-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Text, View } from "react-native";
 import { Icon, useTheme } from "react-native-paper";
 
@@ -7,6 +7,7 @@ import createNotification from "@/api/notifications/create-notification";
 import createTrip from "@/api/trips/create-trip";
 import { useSession } from "@/context/auth";
 import { useTrip } from "@/context/trip";
+import BaseModal from "../ui/base-modal";
 import ChipButton from "../ui/chip-button";
 import PrimaryButton from "../ui/primary-button";
 
@@ -16,13 +17,21 @@ import PrimaryButton from "../ui/primary-button";
  * updates the trip table and sends notifications to drivers.
  *
  * @param distance The distance between origin and destination in km
+ * @param onReset A callback function used to clear route-related values
  */
-export default function Request({ distance }: { distance: number }) {
+export default function Request({
+  distance,
+  onReset,
+}: {
+  distance: number;
+  onReset?: () => void;
+}) {
   const { colors } = useTheme();
   const { user } = useSession();
-  const { origin, destination, setDateTime, setFare } = useTrip();
+  const { origin, destination, setDateTime, setFare, resetTrip } = useTrip();
 
   const userId = user?.id;
+  const [confirmationModal, setConfirmationModal] = useState<boolean>(false);
   const dateTime = useRef(new Date());
 
   // fare calculation: initial charge of €5.00 + €0.50 per km
@@ -60,10 +69,23 @@ export default function Request({ distance }: { distance: number }) {
       notificationType: "ride_requested",
       tripId: newTrip.id,
     });
+
+    setConfirmationModal(true);
   }
 
   return (
     <View>
+      {confirmationModal && (
+        <BaseModal
+          title="Ride requested"
+          body="You'll be notified as soon as a driver accepts your request."
+          screen="/"
+          onConfirm={() => {
+            resetTrip();
+            onReset?.();
+          }}
+        />
+      )}
       <View className="flex-row items-center mx-2">
         <Icon size={40} source="car" color={colors.onBackground} />
         <Link href="/(tabs)/account">
