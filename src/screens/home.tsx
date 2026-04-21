@@ -39,6 +39,7 @@ export default function HomeScreen() {
     origin,
     destination,
     routeInfo,
+    resetKey,
     setOrigin,
     setDestination,
     setRouteInfo,
@@ -46,6 +47,10 @@ export default function HomeScreen() {
 
   const [sheetHeight, setSheetHeight] = useState<number>(0);
   const [mapSearchKey, setMapSearchKey] = useState(0);
+
+  useEffect(() => {
+    if (resetKey > 0) setMapSearchKey((key) => key + 1);
+  }, [resetKey]);
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   // sets the user's location as the default origin
