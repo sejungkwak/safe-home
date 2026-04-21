@@ -81,6 +81,7 @@ export default function HomeScreen() {
               ref={bottomSheetRef}
               backgroundStyle={{ backgroundColor: colors.background }}
               enableDynamicSizing={true}
+              keyboardBlurBehavior="restore"
             >
               <BottomSheetView
                 className="flex-1"
