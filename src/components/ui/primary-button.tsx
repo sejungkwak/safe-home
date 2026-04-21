@@ -22,6 +22,7 @@ export default function PrimaryButton({
         {
           flex: 1,
           minHeight: 40,
+          marginInline: 8,
         },
         outlined && {
           borderColor: colors.primary,
