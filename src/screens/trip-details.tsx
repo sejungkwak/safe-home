@@ -188,6 +188,24 @@ export default function TripDetails() {
   }
 
   /**
+   * Handles the Start Trip button press by a driver:
+   * Updates the matching row in the trip table.
+   */
+  async function handleStartTrip() {
+    await updateTrip(id, "in_progress");
+    setStatus("in_progress");
+  }
+
+  /**
+   * Handles the Complete Trip button press by a driver:
+   * Updates the matching row in the trip table.
+   */
+  async function handleCompleteTrip() {
+    await updateTrip(id, "completed");
+    setStatus("completed");
+  }
+
+  /**
    * Handles Cancel Request button press by a rider:
    * Updates the matching row in the trip table,
    * and creates a new data entry for the notification table.
@@ -254,6 +272,10 @@ export default function TripDetails() {
     if (user.id === riderId) {
       await createRating(id, driverId, rating);
     }
+
+    if (user.id === driverId) {
+      await createRating(id, riderId, rating);
+    }
   }
 
   return (
@@ -299,7 +321,9 @@ export default function TripDetails() {
 
             {/* Driver view */}
             {((!driverName && status === "pending" && user?.id !== riderId) ||
-              (user?.id === driverId && status === "rider_accepted")) && (
+              (user?.id === driverId && status === "rider_accepted") ||
+              (user?.id === driverId && status === "in_progress") ||
+              (user?.id === driverId && status === "completed")) && (
               <>
                 <ChipButton
                   icon="account-circle-outline"
@@ -330,11 +354,41 @@ export default function TripDetails() {
                   icon="calendar-outline"
                   infoText={pickupTime ?? ""}
                 />
-              </>
-            )}
 
-            {!driverName && status === "pending" && user?.id !== riderId && (
-              <PrimaryButton onPress={handleAccept}>Accept</PrimaryButton>
+                {status === "pending" && (
+                  <PrimaryButton onPress={handleAccept}>Accept</PrimaryButton>
+                )}
+
+                {status === "rider_accepted" && (
+                  <PrimaryButton onPress={handleStartTrip}>
+                    Start Trip
+                  </PrimaryButton>
+                )}
+
+                {status === "in_progress" && (
+                  <PrimaryButton onPress={handleCompleteTrip}>
+                    Complete Trip
+                  </PrimaryButton>
+                )}
+
+                {status === "completed" && (
+                  <>
+                    {hasRating && (
+                      <Ratings
+                        name={riderName ?? "the rider"}
+                        readOnly={true}
+                      ></Ratings>
+                    )}
+                    {!hasRating && (
+                      <Ratings
+                        name={riderName ?? "the rider"}
+                        readOnly={false}
+                        onFinish={handleRatingSubmit}
+                      ></Ratings>
+                    )}
+                  </>
+                )}
+              </>
             )}
 
             {/* Rider view */}

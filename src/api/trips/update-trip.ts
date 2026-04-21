@@ -7,6 +7,7 @@ import { supabase } from "../../lib/supabase";
  *
  * @param id The trip id
  * @param statusType The trip status to update to
+ * @param driverId The driver id
  * @returns The trip data object
  */
 export default async function updateTrip(
@@ -20,6 +21,36 @@ export default async function updateTrip(
       .from("trip")
       .update({
         driver_id: driverId,
+        status: statusType,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select();
+
+    if (error) throw error;
+
+    return data;
+  }
+
+  if (statusType === "in_progress") {
+    const { data, error } = await supabase
+      .from("trip")
+      .update({
+        start_time: new Date().toISOString(),
+        status: statusType,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select();
+
+    if (error) throw error;
+
+    return data;
+  } else if (statusType === "completed") {
+    const { data, error } = await supabase
+      .from("trip")
+      .update({
+        end_time: new Date().toISOString(),
         status: statusType,
         updated_at: new Date().toISOString(),
       })
