@@ -12,6 +12,7 @@ type TripContextType = {
   routeInfo: { distance: number; duration: number } | null;
   fare: number | null;
   dateTime: Date | null;
+  resetKey: number;
   setOrigin: (coords: Coords | null) => void;
   setDestination: (coords: Coords | null) => void;
   setRouteInfo: (route: { distance: number; duration: number }) => void;
@@ -43,6 +44,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
     useState<TripContextType["routeInfo"]>(null);
   const [fare, setFare] = useState<number | null>(null);
   const [dateTime, setDateTime] = useState<Date | null>(null);
+  const [resetKey, setResetKey] = useState(0);
 
   function resetTrip() {
     setOrigin(null);
@@ -50,6 +52,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
     setRouteInfo(null);
     setFare(null);
     setDateTime(null);
+    setResetKey((k) => k + 1);
   }
 
   return (
@@ -65,6 +68,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
         setFare,
         dateTime,
         setDateTime,
+        resetKey,
         resetTrip,
       }}
     >
