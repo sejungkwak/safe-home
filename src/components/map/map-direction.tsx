@@ -23,8 +23,8 @@ export default function MapDirection({
       origin={origin}
       destination={destination}
       apikey={GOOGLE_MAPS_KEY}
-      strokeWidth={3}
-      strokeColor={colors.onBackground}
+      strokeWidth={5}
+      strokeColor={colors.primary}
       optimizeWaypoints={true}
       onReady={(result) => {
         onReady?.({
