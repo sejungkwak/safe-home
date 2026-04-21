@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { RadioButton } from "react-native-paper";
 
+import expireTrip from "@/api/trips/expire-trip";
 import fetchTrip from "@/api/trips/fetch-trip";
 import ScreenContainer from "@/components/ui/screen-container";
 import TripCard from "@/components/ui/trip-card";
@@ -41,6 +42,15 @@ function TripsScreen() {
 
   useEffect(() => {
     /**
+     * Updates trips status to "expired"
+     * if they are requested more than an hour ago,
+     * but still pending.
+     */
+    async function cleanUpTrips() {
+      await expireTrip();
+    }
+
+    /**
      * Retrieves trip data, categorises them into upcoming
      * or past trips based on each trip's start time,
      * and stores them in upcomingTrips or pastTrips.
@@ -49,8 +59,6 @@ function TripsScreen() {
       if (!user || !role) return;
 
       const data = await fetchTrip(user.id, role);
-
-      const now = new Date();
 
       function formatStartDate(startDate: string) {
         const { formattedDate, formattedTime } = formatDate(
@@ -64,10 +72,10 @@ function TripsScreen() {
         data
           .filter(
             (trip) =>
-              trip.start_time &&
-              new Date(trip.start_time) >= now &&
-              trip.status !== "driver_cancelled" &&
-              trip.status !== "rider_cancelled",
+              trip.status === "pending" ||
+              trip.status === "driver_accepted" ||
+              trip.status === "rider_accepted" ||
+              trip.status === "in_progress",
           )
           .map((trip) => ({ ...trip, ...formatStartDate(trip.start_time) })),
       );
@@ -77,8 +85,8 @@ function TripsScreen() {
         data
           .filter(
             (trip) =>
-              !trip.start_time ||
-              new Date(trip.start_time) < now ||
+              trip.status === "completed" ||
+              trip.status === "expired" ||
               trip.status === "driver_cancelled" ||
               trip.status === "rider_cancelled",
           )
@@ -86,6 +94,7 @@ function TripsScreen() {
       );
     }
 
+    cleanUpTrips();
     getTrips();
   }, [user, role]);
 
@@ -116,34 +125,47 @@ function TripsScreen() {
       </View>
 
       <ScrollView>
-        {tripsToShow.map((trip) => (
-          <Pressable
-            key={trip.id}
-            // navigate the user to the details screen
-            onPress={() => {
-              router.push({
-                pathname: "/trip-details",
-                params: {
-                  id: trip.id,
-                },
-              });
-            }}
-          >
-            <TripCard
+        {tripsToShow.map((trip) => {
+          let options;
+          if (trip.status === "expired") {
+            options = "Expired";
+          } else if (trip.status === "driver_cancelled") {
+            options = "Driver Cancelled";
+          } else if (trip.status === "rider_cancelled") {
+            options = "Rider Cancelled";
+          }
+
+          return (
+            <Pressable
               key={trip.id}
-              icon={
-                trip.status === "driver_cancelled" ||
-                trip.status === "rider_cancelled"
-                  ? "car-off"
-                  : "car-outline"
-              }
-              pickupTime={`${trip.formattedDate} ${trip.formattedTime}`}
-              origin={trip.start_location.address}
-              destination={trip.end_location.address}
-              fare={trip.fare}
-            />
-          </Pressable>
-        ))}
+              // navigate the user to the details screen
+              onPress={() => {
+                router.push({
+                  pathname: "/trip-details",
+                  params: {
+                    id: trip.id,
+                  },
+                });
+              }}
+            >
+              <TripCard
+                key={trip.id}
+                icon={
+                  trip.status === "driver_cancelled" ||
+                  trip.status === "rider_cancelled" ||
+                  trip.status === "expired"
+                    ? "car-off"
+                    : "car-outline"
+                }
+                pickupTime={`${trip.formattedDate} ${trip.formattedTime}`}
+                options={options}
+                origin={trip.start_location.address}
+                destination={trip.end_location.address}
+                fare={trip.fare}
+              />
+            </Pressable>
+          );
+        })}
       </ScrollView>
     </ScreenContainer>
   );
