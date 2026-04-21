@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { RadioButton } from "react-native-paper";
 
 import fetchTrip from "@/api/trips/fetch-trip";
@@ -115,7 +115,7 @@ function TripsScreen() {
         </RadioButton.Group>
       </View>
 
-      <View>
+      <ScrollView>
         {tripsToShow.map((trip) => (
           <Pressable
             key={trip.id}
@@ -144,7 +144,7 @@ function TripsScreen() {
             />
           </Pressable>
         ))}
-      </View>
+      </ScrollView>
     </ScreenContainer>
   );
 }
