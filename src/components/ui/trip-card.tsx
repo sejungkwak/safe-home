@@ -1,6 +1,11 @@
 import { View } from "react-native";
 import { Card, Icon, Text } from "react-native-paper";
 
+/**
+ * A custom card component utilising React Native Paper Card.
+ * Displays an icon or pickup timing text ("ASAP" or "Later") on the left side
+ * and trip details on the right side.
+ */
 export default function TripCard(props: { [key: string]: any }) {
   return (
     <Card mode="outlined" style={{ margin: 12 }}>
@@ -12,7 +17,10 @@ export default function TripCard(props: { [key: string]: any }) {
           </View>
 
           <View className="flex-1 gap-2">
-            <Text variant="labelMedium">{props.pickupTime}</Text>
+            <View className="flex-1 flex-row gap-4">
+              <Text variant="labelMedium">{props.pickupTime}</Text>
+              <Text variant="labelMedium">{props.options}</Text>
+            </View>
             <Text variant="bodyMedium" numberOfLines={1} ellipsizeMode="tail">
               From: {props.origin}
             </Text>

@@ -87,8 +87,8 @@ export default function TripDetails() {
       if (!riderData) return;
 
       // get driver name
-      // driver field is empty when the status is pending
-      if (data.status !== "pending") {
+      // driver field is empty when the status is pending or expired
+      if (data.driver_id && data.status !== "pending") {
         const { data: driverData, error: driverError } = await supabase
           .from("profile")
           .select("id, name, expo_push_token")
