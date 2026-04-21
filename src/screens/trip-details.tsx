@@ -56,6 +56,7 @@ export default function TripDetails() {
   const [showRiderConfirmModal, setShowRiderConfirmModal] =
     useState<boolean>(false);
   const [hasRating, setHasRating] = useState<boolean>(false);
+  const [sheetHeight, setSheetHeight] = useState<number>(0);
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   // retrieve the trip information based on the id
@@ -301,19 +302,23 @@ export default function TripDetails() {
           screen="/home"
         />
       )}
-      <Map
-        pickUpCoords={origin}
-        dropOffCoords={destination}
-        onReady={(result) => setDistance(result.distance)}
-      />
 
       <GestureHandlerRootView className="flex-1">
+        <Map
+          pickUpCoords={origin}
+          dropOffCoords={destination}
+          bottomPadding={sheetHeight}
+          onReady={(result) => setDistance(result.distance)}
+        />
         <BottomSheet
           ref={bottomSheetRef}
           backgroundStyle={{ backgroundColor: colors.background }}
           enableDynamicSizing={true}
         >
-          <BottomSheetView className="mx-2 pb-4">
+          <BottomSheetView
+            className="mx-2 pb-4"
+            onLayout={(e) => setSheetHeight(e.nativeEvent.layout.height)}
+          >
             <RouteField
               origin={origin?.address ?? null}
               destination={destination?.address ?? null}

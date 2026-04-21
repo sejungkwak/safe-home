@@ -1,5 +1,4 @@
 import { Link } from "expo-router";
-import { cssInterop } from "nativewind";
 import { useEffect, useRef } from "react";
 import { Text, View } from "react-native";
 import { Icon, useTheme } from "react-native-paper";
@@ -11,8 +10,13 @@ import { useTrip } from "@/context/trip";
 import ChipButton from "../ui/chip-button";
 import PrimaryButton from "../ui/primary-button";
 
-cssInterop(PrimaryButton, { className: { target: "style" } });
-
+/**
+ * Handles the ride request button press:
+ * Calculates the fare based on the distance,
+ * updates the trip table and sends notifications to drivers.
+ *
+ * @param distance The distance between origin and destination in km
+ */
 export default function Request({ distance }: { distance: number }) {
   const { colors } = useTheme();
   const { user } = useSession();
@@ -81,9 +85,7 @@ export default function Request({ distance }: { distance: number }) {
       <ChipButton icon="wallet-outline" onPress={() => {}}>
         €{fare} (Cash)
       </ChipButton>
-      <PrimaryButton className="m-2" onPress={onSubmit}>
-        Request
-      </PrimaryButton>
+      <PrimaryButton onPress={onSubmit}>Request</PrimaryButton>
     </View>
   );
 }

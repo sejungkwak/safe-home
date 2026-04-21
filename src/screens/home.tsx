@@ -1,7 +1,7 @@
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 import { cssInterop } from "nativewind";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Alert, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useTheme } from "react-native-paper";
@@ -44,6 +44,7 @@ export default function HomeScreen() {
     setRouteInfo,
   } = useTrip();
 
+  const [sheetHeight, setSheetHeight] = useState<number>(0);
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   // sets the user's location as the default origin
@@ -63,26 +64,27 @@ export default function HomeScreen() {
     <ScreenContainer>
       {role === "rider" && (
         <>
-          <Map
-            pickUpCoords={origin}
-            dropOffCoords={destination ?? null}
-            onReady={(result) => {
-              setRouteInfo({
-                distance: result.distance,
-                duration: result.duration,
-              });
-            }}
-          />
           <GestureHandlerRootView className="flex-1">
+            <Map
+              pickUpCoords={origin}
+              dropOffCoords={destination ?? null}
+              bottomPadding={sheetHeight}
+              onReady={(result) => {
+                setRouteInfo({
+                  distance: result.distance,
+                  duration: result.duration,
+                });
+              }}
+            />
             <BottomSheet
               ref={bottomSheetRef}
-              snapPoints={["50%", "90%"]}
-              keyboardBehavior="fillParent"
               backgroundStyle={{ backgroundColor: colors.background }}
               enableDynamicSizing={true}
-              maxDynamicContentSize={300}
             >
-              <BottomSheetView className="flex-1">
+              <BottomSheetView
+                className="flex-1"
+                onLayout={(e) => setSheetHeight(e.nativeEvent.layout.height)}
+              >
                 {/* origin location */}
                 <MapSearch
                   placeholder="Where from?"

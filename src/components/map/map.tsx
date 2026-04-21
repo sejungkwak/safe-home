@@ -1,5 +1,5 @@
 import { cssInterop } from "nativewind";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Dimensions } from "react-native";
 import MapView, { PROVIDER_DEFAULT } from "react-native-maps";
 
@@ -8,9 +8,20 @@ import MapMarker from "./map-marker";
 
 cssInterop(MapView, { className: { target: "style" } });
 
+/**
+ * A custom map view utilising react-native-maps.
+ * Displays a zoomed-in map focusing on the user's location by default.
+ * Renders a route when a destination is entered.
+ *
+ * @param pickUpCoords The origin's latitude, longitude, and address
+ * @param dropOffCoords The destination's latitude, longitude, and address
+ * @param bottomPadding The height of the bottom sheet
+ * @param onReady A callback function called when the route data is ready
+ */
 export default function Map({
   pickUpCoords,
   dropOffCoords,
+  bottomPadding = 0,
   onReady,
 }: {
   pickUpCoords: { latitude: number; longitude: number; address: string } | null;
@@ -19,6 +30,7 @@ export default function Map({
     longitude: number;
     address: string;
   } | null;
+  bottomPadding?: number;
   onReady?: (result: {
     distance: number;
     duration: number;
@@ -27,7 +39,25 @@ export default function Map({
 }) {
   const { width, height } = Dimensions.get("window");
   const mapRef = useRef<MapView>(null);
+  const [routeCoords, setRouteCoords] = useState<
+    { latitude: number; longitude: number }[] | null
+  >(null);
 
+  // set the size of the map
+  useEffect(() => {
+    if (!routeCoords) return;
+    mapRef.current?.fitToCoordinates(routeCoords, {
+      edgePadding: {
+        top: height / 20,
+        right: width / 20,
+        bottom: height / 20 + bottomPadding,
+        left: width / 20,
+      },
+    });
+  }, [routeCoords, bottomPadding, height, width]);
+
+  // zoom in on either the origin or destination
+  // when the other value is not set
   useEffect(() => {
     if (!dropOffCoords && pickUpCoords) {
       mapRef.current?.animateToRegion(
@@ -69,7 +99,7 @@ export default function Map({
           : undefined
       }
       showsPointsOfInterest={false}
-      className="flex-1 absolute top-0 left-0 right-0 bottom-0 z-0"
+      className="flex-1"
     >
       {pickUpCoords && (
         <MapMarker
@@ -89,14 +119,7 @@ export default function Map({
           destination={dropOffCoords}
           onReady={(result) => {
             onReady?.(result);
-            mapRef.current?.fitToCoordinates(result.coordinates, {
-              edgePadding: {
-                top: height / 20,
-                right: width / 20,
-                bottom: height / 20,
-                left: width / 20,
-              },
-            });
+            setRouteCoords(result.coordinates);
           }}
         />
       )}
