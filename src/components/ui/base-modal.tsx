@@ -9,15 +9,18 @@ import { Button, Modal, Portal, Text, useTheme } from "react-native-paper";
  * @param title The heading text
  * @param body The message
  * @param screen The route to navigate to when "OK" is pressed
+ * @param onConfirm A callback function when "OK" is pressed
  */
 export default function BaseModal({
   title,
   body,
   screen,
+  onConfirm,
 }: {
   title: string;
   body: string;
   screen: Href;
+  onConfirm?: () => void;
 }) {
   const { colors } = useTheme();
   const router = useRouter();
@@ -43,7 +46,13 @@ export default function BaseModal({
         >
           {body}
         </Text>
-        <Button mode="contained" onPress={() => router.replace(screen)}>
+        <Button
+          mode="contained"
+          onPress={() => {
+            onConfirm?.();
+            router.replace(screen);
+          }}
+        >
           OK
         </Button>
       </Modal>

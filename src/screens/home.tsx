@@ -45,6 +45,7 @@ export default function HomeScreen() {
   } = useTrip();
 
   const [sheetHeight, setSheetHeight] = useState<number>(0);
+  const [mapSearchKey, setMapSearchKey] = useState(0);
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   // sets the user's location as the default origin
@@ -87,6 +88,7 @@ export default function HomeScreen() {
               >
                 {/* origin location */}
                 <MapSearch
+                  key={`origin-${mapSearchKey}`}
                   placeholder="Where from?"
                   icon="circle-slice-8"
                   searchFor="origin"
@@ -97,11 +99,13 @@ export default function HomeScreen() {
                 {/* destination location */}
                 <View className="relative">
                   <MapSearch
+                    key={`destination-${mapSearchKey}`}
                     placeholder="Where to?"
                     icon="map-marker-outline"
                     searchFor="destination"
                     onSelect={setDestination}
                     onClear={() => setDestination(null)}
+                    defaultValue={destination?.address}
                   />
                   <ChipButton
                     icon="calendar-clock-outline"
@@ -116,7 +120,10 @@ export default function HomeScreen() {
                 </View>
                 {/* TODO Saved addresses for user to select by pressing */}
                 {origin && destination && routeInfo && (
-                  <Request distance={routeInfo.distance ?? 0} />
+                  <Request
+                    distance={routeInfo.distance ?? 0}
+                    onReset={() => setMapSearchKey((key) => key + 1)}
+                  />
                 )}
               </BottomSheetView>
             </BottomSheet>
