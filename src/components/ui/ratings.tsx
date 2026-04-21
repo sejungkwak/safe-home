@@ -56,7 +56,6 @@ export default function Ratings({
       <Rating
         readonly={isReadOnly}
         startingValue={5}
-        fractions={1}
         tintColor={theme.colors.surface}
         onFinishRating={(newRating: number) => {
           setRating(newRating);
