@@ -12,7 +12,7 @@ export default function RouteField({
   const theme = useTheme();
 
   return (
-    <View>
+    <View className="mx-2">
       <View
         className="flex-row items-center h-14 border rounded-t-xl rounded-b-none px-3 gap-2"
         style={{

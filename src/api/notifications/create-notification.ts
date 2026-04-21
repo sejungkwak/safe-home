@@ -111,6 +111,22 @@ export default async function createNotification({
       break;
     }
 
+    case "driver_cancelled": {
+      const { error } = await supabase.from("notification").insert({
+        user_id: driverId,
+        recipient_id: riderId,
+        recipient_token: pushToken,
+        title: "Trip cancelled",
+        body: `Your driver has cancelled the trip scheduled for ${formattedDate} at ${formattedTime}\nYou'll be notified when another driver accepts your request.`,
+        type: "driver_cancelled",
+        trip_id: tripId,
+      });
+
+      if (error) throw error;
+
+      break;
+    }
+
     default:
       return;
   }

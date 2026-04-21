@@ -32,7 +32,7 @@ export default function Ratings({
 
   return (
     <View
-      className="border rounded-xl py-3 gap-2"
+      className="border rounded-xl mx-2 py-3 gap-2"
       style={{
         borderColor: theme.colors.outline,
         backgroundColor: theme.colors.surface,
