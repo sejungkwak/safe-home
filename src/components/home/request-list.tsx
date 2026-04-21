@@ -104,7 +104,11 @@ export default function RequestList() {
           ))}
         </>
       )}
-      {trips.length === 0 && <Text>No ride requests right now.</Text>}
+      {trips.length === 0 && (
+        <Text variant="titleLarge" style={{ marginLeft: 24 }}>
+          No ride requests right now.
+        </Text>
+      )}
     </ScrollView>
   );
 }

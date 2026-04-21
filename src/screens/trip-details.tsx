@@ -51,8 +51,7 @@ export default function TripDetails() {
   const [distance, setDistance] = useState<number | null>(null);
 
   const [showAcceptModal, setShowAcceptModal] = useState<boolean>(false);
-  const [showRiderCancelModal, setShowRiderCancelModal] =
-    useState<boolean>(false);
+  const [showCancelModal, setShowCancelModal] = useState<boolean>(false);
   const [showRiderConfirmModal, setShowRiderConfirmModal] =
     useState<boolean>(false);
   const [hasRating, setHasRating] = useState<boolean>(false);
@@ -88,7 +87,10 @@ export default function TripDetails() {
 
       // get driver name
       // driver field is empty when the status is pending or expired
-      if (data.driver_id && data.status !== "pending") {
+      if (
+        data.driver_id &&
+        (data.status !== "pending" || data.status !== "expired")
+      ) {
         const { data: driverData, error: driverError } = await supabase
           .from("profile")
           .select("id, name, expo_push_token")
@@ -207,6 +209,63 @@ export default function TripDetails() {
   }
 
   /**
+   * Handles the trip cancel button by a driver:
+   * Updates the trip table, creates a new row by running security definer function,
+   * and create a new entry in notification table to send notification to other drivers.
+   */
+  async function handleDriverCancel() {
+    if (
+      !riderId ||
+      !driverId ||
+      !riderPushToken ||
+      !origin ||
+      !destination ||
+      !dateTime
+    )
+      return;
+
+    const { data, error } = await supabase.rpc("driver_cancel_and_rebook", {
+      cancelled_trip_id: id,
+      start_location: origin,
+      end_location: destination,
+      start_time: dateTime.toISOString(),
+    });
+
+    if (error) {
+      Alert.alert("Something went wrong", "Please try again.");
+      return;
+    }
+
+    const newTripId = data.new_trip_id;
+
+    // send notifications to other drivers
+    await createNotification({
+      riderId: riderId,
+      origin: origin,
+      destination: destination,
+      dateTime: dateTime,
+      notificationType: "pending",
+      tripId: newTripId,
+      fare: fare,
+    });
+
+    // send a notification to the rider
+    await createNotification({
+      riderId: riderId,
+      driverId: driverId,
+      pushToken: riderPushToken,
+      origin: origin,
+      destination: destination,
+      dateTime: dateTime,
+      notificationType: "driver_cancelled",
+      tripId: newTripId,
+      fare: fare,
+    });
+
+    setShowCancelModal(true);
+  }
+
+  /**
    * Handles Cancel Request button press by a rider:
    * Updates the matching row in the trip table,
    * and creates a new data entry for the notification table.
@@ -215,7 +274,14 @@ export default function TripDetails() {
     // update the trip table
     const data = await cancelTrip(id, "rider");
 
-    if (!data) Alert.alert("Something went wrong", "Please try again.");
+    if (!data) {
+      Alert.alert("Something went wrong", "Please try again.");
+      return;
+    }
+
+    setShowCancelModal(true);
+
+    if (!driverId) return;
 
     // create a new notification data entry
     await createNotification({
@@ -229,8 +295,6 @@ export default function TripDetails() {
       tripId: id,
       fare: fare,
     });
-
-    setShowRiderCancelModal(true);
   }
 
   /**
@@ -288,10 +352,10 @@ export default function TripDetails() {
           screen="/home"
         />
       )}
-      {showRiderCancelModal && (
+      {showCancelModal && (
         <BaseModal
-          title="Request cancelled"
-          body="This trip request has been cancelled successfully."
+          title="Trip cancelled"
+          body="This trip has been cancelled successfully."
           screen="/home"
         />
       )}
@@ -316,7 +380,7 @@ export default function TripDetails() {
           enableDynamicSizing={true}
         >
           <BottomSheetView
-            className="mx-2 pb-4"
+            className="pb-4"
             onLayout={(e) => setSheetHeight(e.nativeEvent.layout.height)}
           >
             <RouteField
@@ -326,9 +390,11 @@ export default function TripDetails() {
 
             {/* Driver view */}
             {((!driverName && status === "pending" && user?.id !== riderId) ||
-              (user?.id === driverId && status === "rider_accepted") ||
-              (user?.id === driverId && status === "in_progress") ||
-              (user?.id === driverId && status === "completed")) && (
+              (user?.id === driverId &&
+                (status === "driver_accepted" ||
+                  status === "rider_accepted" ||
+                  status === "in_progress" ||
+                  status === "completed"))) && (
               <>
                 <ChipButton
                   icon="account-circle-outline"
@@ -364,10 +430,24 @@ export default function TripDetails() {
                   <PrimaryButton onPress={handleAccept}>Accept</PrimaryButton>
                 )}
 
-                {status === "rider_accepted" && (
-                  <PrimaryButton onPress={handleStartTrip}>
-                    Start Trip
+                {status === "driver_accepted" && (
+                  <PrimaryButton onPress={handleDriverCancel}>
+                    Cancel
                   </PrimaryButton>
+                )}
+
+                {status === "rider_accepted" && (
+                  <View className="flex-row gap-4 me-2">
+                    <PrimaryButton mode="outlined" onPress={handleDriverCancel}>
+                      Cancel
+                    </PrimaryButton>
+                    <PrimaryButton
+                      onPress={handleStartTrip}
+                      style={{ flex: 1, justifyContent: "center" }}
+                    >
+                      Start Trip
+                    </PrimaryButton>
+                  </View>
                 )}
 
                 {status === "in_progress" && (
@@ -397,7 +477,7 @@ export default function TripDetails() {
             )}
 
             {/* Rider view */}
-            {user?.id === riderId && (
+            {user?.id === riderId && driverName && (
               <ChipButton
                 icon="account-circle-outline"
                 // TODO display driver info on press
@@ -410,7 +490,7 @@ export default function TripDetails() {
             )}
 
             {user?.id === riderId && status === "driver_accepted" && (
-              <View className="flex-row gap-4">
+              <View className="flex-row gap-4 me-2">
                 <PrimaryButton mode="outlined" onPress={handleRiderCancel}>
                   Cancel Request
                 </PrimaryButton>
@@ -423,12 +503,19 @@ export default function TripDetails() {
               </View>
             )}
 
-            {user?.id === riderId &&
-              (status === "rider_accepted" || status === "driver_accepted") && (
+            {user?.id === riderId && status === "pending" && (
+              <View className="mt-4">
                 <PrimaryButton mode="outlined" onPress={handleRiderCancel}>
                   Cancel Request
                 </PrimaryButton>
-              )}
+              </View>
+            )}
+
+            {user?.id === riderId && status === "rider_accepted" && (
+              <PrimaryButton mode="outlined" onPress={handleRiderCancel}>
+                Cancel Request
+              </PrimaryButton>
+            )}
 
             {user?.id === riderId && status === "completed" && (
               <>

@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
-import { RadioButton } from "react-native-paper";
+import { RadioButton, Text } from "react-native-paper";
 
 import expireTrip from "@/api/trips/expire-trip";
 import fetchTrip from "@/api/trips/fetch-trip";
@@ -125,6 +125,12 @@ function TripsScreen() {
       </View>
 
       <ScrollView>
+        {tripsToShow.length === 0 && (
+          <Text variant="titleLarge" style={{ marginLeft: 24 }}>
+            You have no {timeline === "upcoming" ? "upcoming" : "past"} trips.
+          </Text>
+        )}
+
         {tripsToShow.map((trip) => {
           let options;
           if (trip.status === "expired") {

@@ -29,11 +29,11 @@ function onNotificationRedirect(
   switch (notifData.type) {
     // redirect the driver to the home screen with request lists
     case "ride_requested":
-      router.push("/");
+      router.replace("/");
       break;
 
     case "driver_accepted":
-      // redirect the rider to the home screen with driver details
+      // redirect the rider to the trip details screen
       router.push({
         pathname: "/trip-details",
         params: {
@@ -43,7 +43,7 @@ function onNotificationRedirect(
       break;
 
     case "rider_accepted":
-      // redirect the driver to the home screen with the trip details
+      // redirect the driver to the trip details screen
       router.push({
         pathname: "/trip-details",
         params: {
@@ -53,23 +53,18 @@ function onNotificationRedirect(
       break;
 
     case "driver_cancelled":
-      // TODO redirect the rider to the home screen
+      // redirect the rider to the trip details screen
       router.push({
-        pathname: "/",
+        pathname: "/trip-details",
         params: {
-          tripId: notifData.trip_id,
+          id: notifData.trip_id,
         },
       });
       break;
 
     case "rider_cancelled":
-      // TODO redirect the driver to the home screen
-      router.push({
-        pathname: "/",
-        params: {
-          tripId: notifData.trip_id,
-        },
-      });
+      // redirect the driver to the home screen
+      router.replace("/");
       break;
 
     default:
