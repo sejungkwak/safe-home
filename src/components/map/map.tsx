@@ -104,13 +104,13 @@ export default function Map({
       {pickUpCoords && (
         <MapMarker
           coordinate={pickUpCoords}
-          imageUri={require("@/assets/origin.png")}
+          imageUri={require("@/assets/images/origin.png")}
         />
       )}
       {dropOffCoords && (
         <MapMarker
           coordinate={dropOffCoords}
-          imageUri={require("@/assets/destination.png")}
+          imageUri={require("@/assets/images/destination.png")}
         />
       )}
       {pickUpCoords && dropOffCoords && (

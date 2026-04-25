@@ -6,7 +6,7 @@ export default {
     slug: "SafeHome",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/images/icon.png",
+    icon: "./src/assets/images/icons/icon.png",
     scheme: "safehome",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
@@ -18,6 +18,10 @@ export default {
         GIDClientID: process.env.SUPABASE_AUTH_EXTERNAL_GOOGLE_IOS_CLIENT_ID,
         UIBackgroundModes: ["fetch", "remote-notification"],
       },
+      icon: {
+        light: "./src/assets/images/icons/ios-light.png",
+        dark: "./src/assets/images/icons/ios-dark.png",
+      },
     },
     android: {
       config: {
@@ -27,9 +31,7 @@ export default {
       },
       adaptiveIcon: {
         backgroundColor: "#E6F4FE",
-        foregroundImage: "./assets/images/android-icon-foreground.png",
-        backgroundImage: "./assets/images/android-icon-background.png",
-        monochromeImage: "./assets/images/android-icon-monochrome.png",
+        foregroundImage: "./src/assets/images/icons/adaptive-icon.png",
       },
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
@@ -48,7 +50,6 @@ export default {
     },
     web: {
       output: "static",
-      favicon: "./assets/images/favicon.png",
       bundler: "metro",
     },
     plugins: [
@@ -56,13 +57,9 @@ export default {
       [
         "expo-splash-screen",
         {
-          image: "./assets/images/splash-icon.png",
-          imageWidth: 200,
+          image: "./src/assets/images/icons/icon.png",
           resizeMode: "contain",
-          backgroundColor: "#ffffff",
-          dark: {
-            backgroundColor: "#000000",
-          },
+          imageWidth: 200,
         },
       ],
       [

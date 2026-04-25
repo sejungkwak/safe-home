@@ -28,6 +28,7 @@ export default function TabLayout() {
             title: "Ride Requests",
             tabBarLabel: "Home",
             headerShown: role !== "rider",
+            headerShadowVisible: false,
             tabBarIcon: ({ color, focused }) => (
               <Ionicons
                 name={focused ? "home" : "home-outline"}
