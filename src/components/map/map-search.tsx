@@ -22,7 +22,7 @@ export default function MapSearch({
     address: string;
   }) => void;
   onClear: () => void;
-  searchFor: "origin" | "destination";
+  searchFor?: "origin" | "destination";
   placeholder: string;
   icon: string;
   defaultValue?: string;
@@ -39,24 +39,48 @@ export default function MapSearch({
     }
   }, [props.defaultValue]);
 
+  const inBottomSheet = searchFor !== undefined;
+
+  const borderStyle = inBottomSheet
+    ? {
+        borderStartWidth: 2,
+        borderEndWidth: 2,
+        borderTopWidth: searchFor === "origin" ? 2 : 1,
+        borderBottomWidth: searchFor === "origin" ? 1 : 2,
+        borderColor: colors.onBackground,
+        borderTopLeftRadius: searchFor === "origin" ? 10 : 0,
+        borderTopRightRadius: searchFor === "origin" ? 10 : 0,
+        borderBottomLeftRadius: searchFor === "origin" ? 0 : 10,
+        borderBottomRightRadius: searchFor === "origin" ? 0 : 10,
+        marginInline: 8,
+      }
+    : {
+        borderWidth: 2,
+        borderRadius: 10,
+        borderColor: colors.outline,
+        marginHorizontal: 2,
+      };
+
   return (
     <GooglePlacesAutocomplete
       ref={placesRef}
       placeholder={props.placeholder}
       renderLeftButton={() => (
         <View className="justify-center items-center ps-2">
-          <Icon
-            source={props.icon}
-            size={20}
-            color={
-              searchFor === "origin" ? colors.onBackground : colors.primary
-            }
-          />
+          {searchFor && (
+            <Icon
+              source={props.icon}
+              size={20}
+              color={
+                searchFor === "origin" ? colors.onBackground : colors.primary
+              }
+            />
+          )}
         </View>
       )}
       minLength={3}
       textInputProps={{
-        InputComp: BottomSheetTextInput,
+        ...(inBottomSheet && { InputComp: BottomSheetTextInput }),
         placeholderTextColor: colors.onBackground,
         autoCorrect: false,
         onChangeText: (text) => {
@@ -64,18 +88,7 @@ export default function MapSearch({
         },
       }}
       styles={{
-        textInputContainer: {
-          borderStartWidth: 2,
-          borderEndWidth: 2,
-          borderTopWidth: searchFor === "origin" ? 2 : 1,
-          borderBottomWidth: searchFor === "origin" ? 1 : 2,
-          borderColor: colors.onBackground,
-          borderTopLeftRadius: searchFor === "origin" ? 10 : 0,
-          borderTopRightRadius: searchFor === "origin" ? 10 : 0,
-          borderBottomLeftRadius: searchFor === "origin" ? 0 : 10,
-          borderBottomRightRadius: searchFor === "origin" ? 0 : 10,
-          marginInline: 8,
-        },
+        textInputContainer: borderStyle,
         textInput: {
           backgroundColor: colors.background,
           color: colors.onBackground,
@@ -111,6 +124,7 @@ export default function MapSearch({
         language: "en",
         components: "country:ie", // limit results to Ireland
       }}
+      disableScroll
     />
   );
 }
