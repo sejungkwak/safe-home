@@ -52,7 +52,10 @@ function SigninScreen() {
       .single();
 
     if (!userProfile || userTypeError) {
-      Alert.alert("The information you entered does not match our records.");
+      Alert.alert(
+        "Invalid login credentials",
+        "The information you entered does not match our records.",
+      );
       await supabase.auth.signOut();
       return;
     }
@@ -75,99 +78,101 @@ function SigninScreen() {
   return (
     <ScreenContainer>
       <ScrollView>
-      <View className="mb-4">
-        <RadioButton.Group
-          onValueChange={(value) => setUserType(value)}
-          value={userType}
-        >
-          <View className="flex-row">
-            <RadioButton.Item
-              label="Rider"
-              value="rider"
-              mode="android"
-              position="leading"
+        <View className="mb-4">
+          <RadioButton.Group
+            onValueChange={(value) => setUserType(value)}
+            value={userType}
+          >
+            <View className="flex-row">
+              <RadioButton.Item
+                label="Rider"
+                value="rider"
+                mode="android"
+                position="leading"
+              />
+              <RadioButton.Item
+                label="Driver"
+                value="driver"
+                mode="android"
+                position="leading"
+              />
+            </View>
+          </RadioButton.Group>
+          <View>
+            <Controller
+              control={control}
+              name="email"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <View>
+                  <InputField
+                    label="Email Address"
+                    mode="outlined"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    value={value}
+                    error={!!errors.email}
+                  />
+                  <HelperText
+                    type="error"
+                    visible={!!errors.email}
+                    padding="none"
+                  >
+                    {errors.email?.message}
+                  </HelperText>
+                </View>
+              )}
             />
-            <RadioButton.Item
-              label="Driver"
-              value="driver"
-              mode="android"
-              position="leading"
+            <Controller
+              name="password"
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <View>
+                  <InputField
+                    label="Password"
+                    mode="outlined"
+                    autoCapitalize="none"
+                    secureTextEntry
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    value={value}
+                    error={!!errors.password}
+                  />
+                  <HelperText
+                    type="error"
+                    visible={!!errors.password}
+                    padding="none"
+                  >
+                    {errors.password?.message}
+                  </HelperText>
+                </View>
+              )}
             />
           </View>
-        </RadioButton.Group>
-        <View>
-          <Controller
-            control={control}
-            name="email"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <View>
-                <InputField
-                  label="Email Address"
-                  mode="outlined"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                  value={value}
-                  error={!!errors.email}
-                />
-                <HelperText
-                  type="error"
-                  visible={!!errors.email}
-                  padding="none"
-                >
-                  {errors.email?.message}
-                </HelperText>
-              </View>
-            )}
-          />
-          <Controller
-            name="password"
-            control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <View>
-                <InputField
-                  label="Password"
-                  mode="outlined"
-                  autoCapitalize="none"
-                  secureTextEntry
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                  value={value}
-                  error={!!errors.password}
-                />
-                <HelperText
-                  type="error"
-                  visible={!!errors.password}
-                  padding="none"
-                >
-                  {errors.password?.message}
-                </HelperText>
-              </View>
-            )}
-          />
+          <PrimaryButton onPress={handleSubmit(onSubmit)}>
+            Sign In
+          </PrimaryButton>
         </View>
-        <PrimaryButton onPress={handleSubmit(onSubmit)}>Sign In</PrimaryButton>
-      </View>
 
-      <View className="flex-row items-center gap-2 my-4">
-        <HorizontalLine />
-        <Text>or</Text>
-        <HorizontalLine />
-      </View>
-      <GoogleSignIn />
+        <View className="flex-row items-center gap-2 my-4">
+          <HorizontalLine />
+          <Text>or</Text>
+          <HorizontalLine />
+        </View>
+        <GoogleSignIn />
 
-      <View className="flex-row justify-center gap-2 mt-8">
-        <Text variant="bodyLarge">Don&apos;t have an account?</Text>
-        <Link href="/sign-up">
-          <Text
-            variant="bodyLarge"
-            theme={{ colors: { onSurface: colors.primary } }}
-          >
-            Sign up
-          </Text>
-        </Link>
-      </View>
+        <View className="flex-row justify-center gap-2 mt-8">
+          <Text variant="bodyLarge">Don&apos;t have an account?</Text>
+          <Link href="/sign-up">
+            <Text
+              variant="bodyLarge"
+              theme={{ colors: { onSurface: colors.primary } }}
+            >
+              Sign up
+            </Text>
+          </Link>
+        </View>
       </ScrollView>
     </ScreenContainer>
   );

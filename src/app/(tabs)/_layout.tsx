@@ -6,13 +6,15 @@ import {
 } from "@react-navigation/native";
 import { Tabs } from "expo-router";
 import { useColorScheme } from "react-native";
-import { useTheme } from "react-native-paper";
+import { IconButton, useTheme } from "react-native-paper";
 
+import { useSession } from "@/context/auth";
 import { useRole } from "@/context/role";
 
 export default function TabLayout() {
   const { colors } = useTheme();
   const colorScheme = useColorScheme();
+  const { signOut } = useSession();
   const { role } = useRole();
 
   return (
@@ -59,6 +61,9 @@ export default function TabLayout() {
             title: "Account",
             headerShown: true,
             headerShadowVisible: false,
+            headerRight: () => (
+              <IconButton icon="logout" size={20} onPress={signOut} />
+            ),
             tabBarIcon: ({ color, focused }) => (
               <Ionicons
                 name={focused ? "person-circle" : "person-circle-outline"}

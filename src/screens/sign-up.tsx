@@ -1,13 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as ImagePicker from "expo-image-picker";
 import { Link } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Alert, ScrollView, useColorScheme, View } from "react-native";
-import PhoneInput, {
-  ICountry,
-  isValidPhoneNumber,
-} from "react-native-international-phone-number";
+import { Alert, ScrollView, View } from "react-native";
+import { ICountry } from "react-native-international-phone-number";
 import {
   Button,
   Card,
@@ -18,11 +14,15 @@ import {
 } from "react-native-paper";
 import { supabase } from "../lib/supabase";
 
+import uploadImage from "@/api/storage/upload-image";
 import GoogleSignIn from "@/components/auth/google-sign-in";
 import HorizontalLine from "@/components/ui/horizontal-line";
 import InputField from "@/components/ui/input-field";
+import PhoneField from "@/components/ui/phone-field";
 import PrimaryButton from "@/components/ui/primary-button";
 import ScreenContainer from "@/components/ui/screen-container";
+import { pickImage } from "@/lib/pick-image";
+import { validatePhoneNumber } from "@/lib/validate-phone-number";
 import { signupData, signupSchema } from "@/schemas/sign-up";
 
 /**
@@ -37,7 +37,6 @@ function SignUpScreen() {
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
 
   const { colors } = useTheme();
-  const colorScheme = useColorScheme();
 
   // initialise React Hook Form with Zod schema validation
   const {
@@ -66,122 +65,33 @@ function SignUpScreen() {
     clearErrors();
   }, [userType, clearErrors]);
 
-  // the react-native-international-phone-number package is using for
-  // country code selection and phone number validation
-  const [selectedCountry, setSelectedCountry] = useState<undefined | ICountry>(
+  const [selectedCountry, setSelectedCountry] = useState<ICountry | undefined>(
     undefined,
   );
-  function handleSelectedCountry(country: ICountry) {
-    setSelectedCountry(country);
-  }
-
-  // Image upload code is adopted from the following resources:
-  // https://docs.expo.dev/versions/latest/sdk/imagepicker/
-  // https://supabase.com/docs/guides/getting-started/tutorials/with-expo-react-native?queryGroups=database-method&database-method=sql#create-an-upload-widget
 
   /**
    * Opens the device media library and displays the selected image on the screen.
    */
   async function onSelectImage(field: "drivingLicence" | "profilePhoto") {
     try {
-      // request permission to access the device media library
-      const permissionResult =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const image = await pickImage();
+      if (!image) return;
 
-      if (!permissionResult.granted) {
-        Alert.alert(
-          "Permission required",
-          "Permission to access the media library is required.",
-        );
-        return;
-      }
-
-      // launch the device media library
-      let result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ["images"],
-        allowsEditing: true,
-        quality: 1,
-      });
-      if (result.canceled || !result.assets || result.assets.length === 0) {
-        return;
-      }
-
-      const image = result.assets[0];
-      if (!image.uri) {
-        throw new Error("No image uri!");
-      }
-
-      // store the selected image's metadata in the form field and validate it
-      setValue(
-        field,
-        {
-          uri: image.uri,
-          name: image.fileName ?? image.uri.split("/").pop() ?? "file",
-          mimeType: image.mimeType,
-          size: image.fileSize,
-        },
-        { shouldValidate: true },
-      );
-      if (field === "drivingLicence") {
-        setDrivingLicence(image.uri);
-      }
-      if (field === "profilePhoto") {
-        setProfilePhoto(image.uri);
-      }
+      setValue(field, image, { shouldValidate: true });
+      if (field === "drivingLicence") setDrivingLicence(image.uri);
+      if (field === "profilePhoto") setProfilePhoto(image.uri);
     } catch (error) {
-      if (error instanceof Error) {
-        Alert.alert(error.message);
-      }
+      if (error instanceof Error) Alert.alert(error.message);
     }
-  }
-
-  /**
-   * Uploads an image file to the specified Supabase storage bucket.
-   */
-  async function uploadImage(
-    image: {
-      uri: string;
-      name: string;
-      mimeType: string;
-    },
-    bucket: string,
-  ) {
-    // extract the file extension from a file name
-    const fileExt = image.name.split(".").pop();
-    // generate a random file name
-    const filePath = `${Math.random()}.${fileExt}`;
-    // convert the image uri to an array buffer.
-    const arraybuffer = await fetch(image.uri).then((res) => res.arrayBuffer());
-
-    // upload the image to the storage bucket.
-    const { error } = await supabase.storage
-      .from(bucket)
-      .upload(filePath, arraybuffer, {
-        // fall back to jpeg if the mimeType is not defined
-        contentType: image.mimeType ?? "image/jpeg",
-      });
-
-    if (error) {
-      throw error;
-    }
-
-    return filePath;
   }
 
   /**
    * Handles form submission after Zod schema validations have passed.
    */
   async function onSubmit(values: signupData) {
-    // validate phone number input
-    const phoneNumber = `${selectedCountry?.idd?.root} ${values.phone}`;
-    const isValid = isValidPhoneNumber(
-      values.phone,
-      selectedCountry as ICountry,
-    );
-    if (!isValid) {
-      setError("phone", {
-        message: "Invalid mobile number.",
-      });
+    const phoneNumber = validatePhoneNumber(values.phone, selectedCountry);
+    if (!phoneNumber) {
+      setError("phone", { message: "Invalid mobile number." });
       return;
     }
 
@@ -299,30 +209,13 @@ function SignUpScreen() {
               name="phone"
               control={control}
               render={({ field: { onChange, value } }) => (
-                <View>
-                  <PhoneInput
-                    defaultCountry="IE"
-                    placeholder="Mobile Number"
-                    value={value}
-                    onChangePhoneNumber={onChange}
-                    selectedCountry={selectedCountry}
-                    onChangeSelectedCountry={handleSelectedCountry}
-                    theme={colorScheme === "dark" ? "dark" : "light"}
-                    phoneInputStyles={{
-                      container: { backgroundColor: colors.background },
-                      flagContainer: { backgroundColor: colors.background },
-                      caret: { color: colors.onBackground },
-                      callingCode: { color: colors.onBackground },
-                    }}
-                  />
-                  <HelperText
-                    type="error"
-                    visible={!!errors.phone}
-                    padding="none"
-                  >
-                    {errors.phone?.message}
-                  </HelperText>
-                </View>
+                <PhoneField
+                  value={value}
+                  onChange={onChange}
+                  selectedCountry={selectedCountry}
+                  onCountryChange={setSelectedCountry}
+                  errorMessage={errors.phone?.message}
+                />
               )}
             />
             <Controller
