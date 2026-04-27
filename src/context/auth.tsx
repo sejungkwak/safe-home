@@ -72,6 +72,14 @@ export function SessionProvider({ children }: PropsWithChildren) {
   };
 
   const signOut = async () => {
+    // reset push token to null when the user signs out,
+    // so that notifications are not sent to signed-out users
+    if (user) {
+      await supabase
+        .from("profile")
+        .update({ expo_push_token: null })
+        .eq("id", user.id);
+    }
     await supabase.auth.signOut();
   };
 
