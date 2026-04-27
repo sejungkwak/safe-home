@@ -20,6 +20,7 @@ import Ratings from "@/components/ui/ratings";
 import RouteField from "@/components/ui/route-field";
 import ScreenContainer from "@/components/ui/screen-container";
 import TripInfoItem from "@/components/ui/trip-info-item";
+import UserInfoModal from "@/components/ui/user-info-modal";
 import { useSession } from "@/context/auth";
 import formatDate from "@/lib/format-date";
 import { supabase } from "@/lib/supabase";
@@ -33,14 +34,32 @@ export default function TripDetails() {
   const { colors } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  // store the trip details in state
+  // store the user and trip details in state
   const [riderId, setRiderId] = useState<string | null>(null);
   const [riderName, setRiderName] = useState<string | null>(null);
+  const [riderPhone, setRiderPhone] = useState<string | null>(null);
+  const [riderProfilePhotoUrl, setRiderProfilePhotoUrl] = useState<
+    string | null
+  >(null);
+  const [riderRating, setRiderRating] = useState<number | undefined>(undefined);
+  const [riderAverageRating, setRiderAverageRating] = useState<number | null>(
+    null,
+  );
   const [riderPushToken, setRiderPushToken] = useState<string | null>(null);
   const [reg, setReg] = useState<string | null>(null);
   const [transmission, setTransmission] = useState<string | null>(null);
   const [driverId, setDriverId] = useState<string | null>(null);
   const [driverName, setDriverName] = useState<string | null>(null);
+  const [driverPhone, setDriverPhone] = useState<string | null>(null);
+  const [driverProfilePhotoUrl, setDriverProfilePhotoUrl] = useState<
+    string | null
+  >(null);
+  const [driverRating, setDriverRating] = useState<number | undefined>(
+    undefined,
+  );
+  const [driverAverageRating, setDriverAverageRating] = useState<number | null>(
+    null,
+  );
   const [driverPushToken, setDriverPushToken] = useState<string | null>(null);
   const [pickupTime, setPickupTime] = useState<string | null>(null);
   const [dateTime, setDateTime] = useState<Date | null>(null);
@@ -50,6 +69,9 @@ export default function TripDetails() {
   const [status, setStatus] = useState<string | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
 
+  const [showRiderInfoModal, setShowRiderInfoModal] = useState<boolean>(false);
+  const [showDriverInfoModal, setShowDriverInfoModal] =
+    useState<boolean>(false);
   const [showAcceptModal, setShowAcceptModal] = useState<boolean>(false);
   const [showCancelModal, setShowCancelModal] = useState<boolean>(false);
   const [showRiderConfirmModal, setShowRiderConfirmModal] =
@@ -58,12 +80,12 @@ export default function TripDetails() {
   const [sheetHeight, setSheetHeight] = useState<number>(0);
   const bottomSheetRef = useRef<BottomSheet>(null);
 
-  // retrieve the trip information based on the id
   useEffect(() => {
     let isMounted = true;
     async function getTripData() {
       if (!id) return;
 
+      // retrieve the trip information based on the id
       const { data, error } = await supabase
         .from("trip")
         .select("*")
@@ -77,13 +99,34 @@ export default function TripDetails() {
       const { data: riderData, error: riderError } = await supabase
         .from("profile")
         .select(
-          "id, name, expo_push_token, vehicle:vehicle_id (reg, transmission_type)",
+          "id, name, phone, profile_photo, expo_push_token, vehicle:vehicle_id (reg, transmission_type)",
         )
         .eq("id", data.rider_id)
         .single();
 
       if (riderError) throw riderError;
       if (!riderData) return;
+
+      if (riderData.profile_photo) {
+        const { data: photoData } = supabase.storage
+          .from("profiles")
+          .getPublicUrl(riderData.profile_photo);
+        if (isMounted) setRiderProfilePhotoUrl(photoData.publicUrl);
+      }
+
+      const ratingRows = await fetchRating(riderData.id);
+      if (isMounted && ratingRows.length > 0) {
+        const avg =
+          ratingRows.reduce(
+            (sum: number, row: { rating: number }) => sum + row.rating,
+            0,
+          ) / ratingRows.length;
+        setRiderAverageRating(avg);
+      }
+
+      const riderSingleRating = await fetchRating(riderData.id, id);
+      if (isMounted && riderSingleRating)
+        setRiderRating(riderSingleRating.rating);
 
       // get driver name
       // driver field is empty when the status is pending or expired
@@ -93,7 +136,7 @@ export default function TripDetails() {
       ) {
         const { data: driverData, error: driverError } = await supabase
           .from("profile")
-          .select("id, name, expo_push_token")
+          .select("id, name, phone, profile_photo, expo_push_token")
           .eq("id", data.driver_id)
           .single();
 
@@ -101,8 +144,30 @@ export default function TripDetails() {
         if (driverData && isMounted) {
           setDriverId(driverData.id);
           setDriverName(driverData.name);
+          setDriverPhone(driverData.phone);
           setDriverPushToken(driverData.expo_push_token);
         }
+
+        if (driverData.profile_photo) {
+          const { data: photoData } = supabase.storage
+            .from("profiles")
+            .getPublicUrl(driverData.profile_photo);
+          if (isMounted) setDriverProfilePhotoUrl(photoData.publicUrl);
+        }
+
+        const ratingRows = await fetchRating(driverData.id);
+        if (isMounted && ratingRows.length > 0) {
+          const avg =
+            ratingRows.reduce(
+              (sum: number, row: { rating: number }) => sum + row.rating,
+              0,
+            ) / ratingRows.length;
+          setDriverAverageRating(avg);
+        }
+
+        const driverSingleRating = await fetchRating(driverData.id, id);
+        if (isMounted && driverSingleRating)
+          setDriverRating(driverSingleRating.rating);
       }
 
       if (isMounted) {
@@ -112,6 +177,7 @@ export default function TripDetails() {
 
         setRiderId(riderData.id);
         setRiderName(riderData.name);
+        setRiderPhone(riderData.phone);
         setRiderPushToken(riderData.expo_push_token);
         setReg(data.vehicle?.reg);
         setTransmission(data.vehicle?.transmission_type);
@@ -139,14 +205,12 @@ export default function TripDetails() {
       if (user?.id === riderId) {
         if (!driverId || !isMounted) return;
         const data = await fetchRating(driverId, id);
-        if (data.length === 0) setHasRating(false);
-        if (data.length > 0) setHasRating(true);
+        if (isMounted) setHasRating(data !== null);
       }
       if (user?.id === driverId) {
         if (!riderId || !isMounted) return;
         const data = await fetchRating(riderId, id);
-        if (data.length === 0) setHasRating(false);
-        if (data.length > 0) setHasRating(true);
+        if (isMounted) setHasRating(data !== null);
       }
     }
 
@@ -336,15 +400,39 @@ export default function TripDetails() {
 
     if (user.id === riderId) {
       await createRating(id, driverId, rating);
+      setDriverRating(rating);
     }
 
     if (user.id === driverId) {
       await createRating(id, riderId, rating);
+      setRiderRating(rating);
     }
+
+    setHasRating(true);
   }
 
   return (
     <ScreenContainer>
+      {showRiderInfoModal && (
+        <UserInfoModal
+          visible={showRiderInfoModal}
+          name={riderName}
+          phone={riderPhone}
+          profilePhotoUrl={riderProfilePhotoUrl}
+          averageRating={riderAverageRating}
+          onDismiss={() => setShowRiderInfoModal(false)}
+        />
+      )}
+      {showDriverInfoModal && (
+        <UserInfoModal
+          visible={showDriverInfoModal}
+          name={driverName}
+          phone={driverPhone}
+          profilePhotoUrl={driverProfilePhotoUrl}
+          averageRating={driverAverageRating}
+          onDismiss={() => setShowDriverInfoModal(false)}
+        />
+      )}
       {showAcceptModal && (
         <BaseModal
           title="Acceptance received"
@@ -398,10 +486,7 @@ export default function TripDetails() {
               <>
                 <ChipButton
                   icon="account-circle-outline"
-                  // TODO display user info on press
-                  onPress={() => {
-                    console.log("rider button");
-                  }}
+                  onPress={() => setShowRiderInfoModal(true)}
                 >
                   {riderName}
                 </ChipButton>
@@ -462,6 +547,7 @@ export default function TripDetails() {
                       <Ratings
                         name={riderName ?? "the rider"}
                         readOnly={true}
+                        savedRating={riderRating}
                       ></Ratings>
                     )}
                     {!hasRating && (
@@ -480,9 +566,8 @@ export default function TripDetails() {
             {user?.id === riderId && driverName && (
               <ChipButton
                 icon="account-circle-outline"
-                // TODO display driver info on press
                 onPress={() => {
-                  console.log("driver button");
+                  setShowDriverInfoModal(true);
                 }}
               >
                 {driverName}
@@ -528,6 +613,7 @@ export default function TripDetails() {
                   <Ratings
                     name={driverName ?? "the driver"}
                     readOnly={true}
+                    savedRating={driverRating}
                   ></Ratings>
                 )}
                 {!hasRating && (

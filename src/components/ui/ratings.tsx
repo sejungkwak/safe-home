@@ -13,15 +13,17 @@ import PrimaryButton from "./primary-button";
  */
 export default function Ratings({
   name,
-  onFinish,
   readOnly,
+  savedRating,
+  onFinish,
 }: {
   name: string;
   readOnly: boolean;
+  savedRating?: number;
   onFinish?: (rating: number) => void;
 }) {
   const theme = useTheme();
-  const [rating, setRating] = useState<number>(5);
+  const [rating, setRating] = useState<number>(savedRating ?? 5);
   const [isReadOnly, setIsReadOnly] = useState<boolean>(readOnly);
 
   function onPress() {
@@ -50,15 +52,15 @@ export default function Ratings({
       )}
       {isReadOnly && (
         <Text variant="titleSmall" style={{ textAlign: "center" }}>
-          You have given {name} {rating} stars.
+          You have given {name} {savedRating} stars.
         </Text>
       )}
       <Rating
         readonly={isReadOnly}
-        startingValue={5}
+        startingValue={rating}
         tintColor={theme.colors.surface}
         onFinishRating={(newRating: number) => {
-          setRating(newRating);
+          if (!isReadOnly) setRating(newRating);
         }}
       />
       {!isReadOnly && <PrimaryButton onPress={onPress}>Submit</PrimaryButton>}

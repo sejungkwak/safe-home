@@ -1,8 +1,16 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Image } from "expo-image";
+import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Alert, Keyboard, Pressable, ScrollView, View } from "react-native";
+import {
+  Alert,
+  Keyboard,
+  Pressable,
+  ScrollView,
+  TextInput,
+  View,
+} from "react-native";
 import { ICountry } from "react-native-international-phone-number";
 import {
   Button,
@@ -41,6 +49,7 @@ export default function AccountScreen() {
   const { user } = useSession();
   const { role } = useRole();
   const { colors } = useTheme();
+  const { focus } = useLocalSearchParams();
 
   const isRider = role === "rider";
   const isDriver = role === "driver";
@@ -66,6 +75,7 @@ export default function AccountScreen() {
   );
   const [driverVerification, setDriverVerification] = useState<boolean>(false);
   const profileLoaded = useRef(false);
+  const vehicleRef = useRef<TextInput | null>(null);
 
   const {
     handleSubmit,
@@ -148,6 +158,10 @@ export default function AccountScreen() {
   useEffect(() => {
     loadProfile();
   }, [loadProfile]);
+
+  useEffect(() => {
+    if (focus === "vehicleReg") vehicleRef.current?.focus();
+  }, [focus]);
 
   async function onSelectProfilePhoto() {
     await handleImageSelection(setProfilePhoto, setNewProfilePhoto, {
@@ -476,6 +490,7 @@ export default function AccountScreen() {
                       onBlur={onBlur}
                       value={value}
                       error={!!errors.vehicleReg}
+                      ref={vehicleRef}
                     />
                     <HelperText
                       type="error"

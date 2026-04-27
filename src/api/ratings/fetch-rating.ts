@@ -14,7 +14,8 @@ export default async function fetchRating(userId: string, tripId?: string) {
     const { data, error } = await supabase
       .from("rating")
       .select("*")
-      .match({ trip_id: tripId, user_id: userId });
+      .match({ trip_id: tripId, user_id: userId })
+      .maybeSingle();
 
     if (error) throw error;
 
