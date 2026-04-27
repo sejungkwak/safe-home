@@ -1,9 +1,10 @@
-import { Link } from "expo-router";
+import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Text, View } from "react-native";
-import { Icon, useTheme } from "react-native-paper";
+import { Button, Icon, useTheme } from "react-native-paper";
 
 import createNotification from "@/api/notifications/create-notification";
+import fetchProfile from "@/api/profiles/fetch-profile";
 import createTrip from "@/api/trips/create-trip";
 import { useSession } from "@/context/auth";
 import { useTrip } from "@/context/trip";
@@ -32,6 +33,10 @@ export default function Request({
 
   const userId = user?.id;
   const [confirmationModal, setConfirmationModal] = useState<boolean>(false);
+  const [reg, setReg] = useState<string | undefined>(undefined);
+  const [transmission, setTransmission] = useState<string | undefined>(
+    undefined,
+  );
   const dateTime = useRef(new Date());
 
   // fare calculation: initial charge of €5.00 + €0.50 per km
@@ -46,6 +51,19 @@ export default function Request({
   useEffect(() => {
     setFare(fare);
   }, [fare, setFare]);
+
+  useEffect(() => {
+    async function getReg() {
+      if (!user) return;
+
+      const userProfile = await fetchProfile(user.id);
+      if (!userProfile) return;
+
+      setReg(userProfile.vehicle.reg);
+      setTransmission(userProfile.vehicle.transmission_type);
+    }
+    getReg();
+  }, [user]);
 
   /**
    * handles the Request button press.
@@ -86,27 +104,39 @@ export default function Request({
           }}
         />
       )}
+
       <View className="flex-row items-center mx-2">
-        <Icon size={40} source="car" color={colors.onBackground} />
-        <Link href="/(tabs)/account">
-          <View className="flex-col gap-1 my-4">
-            {/* TODO Reg should be retrieved from database. */}
+        <Icon size={36} source="car" color={colors.onSurface} />
+        {reg && transmission ? (
+          <View className="flex-col items-start">
             <Text
-              className="mt-2 ms-2 text-xl"
-              style={{ color: colors.onBackground }}
+              className="mt-3 ms-3 text-lg"
+              style={{ color: colors.onSurface }}
             >
-              261D1111
+              {reg} ({transmission[0].toUpperCase() + transmission.slice(1)})
             </Text>
-            <Text className="mb-2 ms-2" style={{ color: colors.primary }}>
+            <Button
+              textColor={colors.primary}
+              labelStyle={{ marginTop: 0 }}
+              onPress={() => {
+                router.push({
+                  pathname: "/(tabs)/account",
+                  params: { focus: "vehicleReg" },
+                });
+              }}
+            >
               Edit my vehicle
-            </Text>
+            </Button>
           </View>
-        </Link>
+        ) : (
+          <View>
+            <Button onPress={() => {}}>Add my vehicle</Button>
+          </View>
+        )}
       </View>
-      {/* TODO onPress: display payment options */}
-      <ChipButton icon="wallet-outline" onPress={() => {}}>
-        €{fare} (Cash)
-      </ChipButton>
+      <View className="mb-4">
+        <ChipButton icon="wallet-outline">€{fare} (Cash)</ChipButton>
+      </View>
       <PrimaryButton onPress={onSubmit}>Request</PrimaryButton>
     </View>
   );
