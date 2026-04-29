@@ -10,6 +10,18 @@ import { Icon, useTheme } from "react-native-paper";
 
 cssInterop(View, { className: { target: "style" } });
 
+/**
+ * A Google Places address search input component.
+ * It renders either two fields, origin with a default value and destination,
+ * or a single address field used on the account screen.
+ * It allows a user to search for a place by address, clearing the input, and
+ * sends the selected place's coordinates and address to the parent component.
+ *
+ * @param onSelect A function called when a place is selected
+ * @param onClear A function called when the input is cleared
+ * @param searchFor Input field information, "origin" or "destination"
+ * @returns A customised GooglePlacesAutocomplete component
+ */
 export default function MapSearch({
   onSelect,
   onClear,
@@ -39,6 +51,7 @@ export default function MapSearch({
     }
   }, [props.defaultValue]);
 
+  // place the component inside a bottom sheet if searchFor exists
   const inBottomSheet = searchFor !== undefined;
 
   const borderStyle = inBottomSheet
@@ -64,6 +77,7 @@ export default function MapSearch({
   return (
     <GooglePlacesAutocomplete
       ref={placesRef}
+      key={props.defaultValue ?? ""}
       placeholder={props.placeholder}
       renderLeftButton={() => (
         <View className="justify-center items-center ps-2">
@@ -88,6 +102,11 @@ export default function MapSearch({
         },
       }}
       styles={{
+        container: {
+          flexGrow: 0,
+          flexShrink: 0,
+          flexBasis: "auto",
+        },
         textInputContainer: borderStyle,
         textInput: {
           backgroundColor: colors.background,
@@ -110,6 +129,9 @@ export default function MapSearch({
         },
       }}
       fetchDetails={true}
+      keepResultsAfterBlur={true}
+      keyboardShouldPersistTaps="always"
+      isRowScrollable={false}
       onPress={(data, details = null) => {
         if (data && details) {
           const latitude = details.geometry.location.lat;
@@ -119,9 +141,11 @@ export default function MapSearch({
           onSelect({ latitude, longitude, address });
         }
       }}
+      debounce={300}
       query={{
         key: process.env.EXPO_PUBLIC_GOOGLE_API_KEY,
         language: "en",
+        types: "address",
         components: "country:ie", // limit results to Ireland
       }}
       disableScroll
