@@ -23,6 +23,7 @@
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
     "@supabase/supabase-js": "^2.99.2",
+    "aes-js": "^3.1.2",
     "babel-preset-expo": "~54.0.10",
     "expo": "~54.0.33",
     "expo-constants": "~18.0.13",
@@ -52,6 +53,7 @@
     "react-hook-form": "^7.71.2",
     "react-native": "0.81.5",
     "react-native-gesture-handler": "~2.28.0",
+    "react-native-get-random-values": "^2.0.0",
     "react-native-google-places-autocomplete": "^2.6.4",
     "react-native-international-phone-number": "^0.11.10",
     "react-native-maps": "1.20.1",
@@ -69,6 +71,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@types/aes-js": "^3.1.4",
     "@types/react": "~19.1.0",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
