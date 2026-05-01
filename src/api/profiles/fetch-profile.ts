@@ -1,7 +1,7 @@
 import { supabase } from "../../lib/supabase";
 
 /**
- * Retrieves profile data including vehicle details.
+ * Retrieves profile data including vehicle and driver_verification details.
  *
  * @param userId The user id used to look up profiles
  * @returns An array containing the retrieved profile data
@@ -9,7 +9,9 @@ import { supabase } from "../../lib/supabase";
 export default async function fetchProfile(userId: string) {
   const { data, error } = await supabase
     .from("profile")
-    .select(`*, vehicle(*)`)
+    .select(
+      `*, vehicle(*), driver_verification!profile_driver_verification_status_id_fkey(*)`,
+    )
     .eq("id", userId)
     .single();
 
