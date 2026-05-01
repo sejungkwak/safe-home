@@ -119,10 +119,7 @@ function SignUpScreen() {
     }
 
     // register a new user with Supabase Auth
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
       options: {
@@ -142,8 +139,16 @@ function SignUpScreen() {
       return;
     }
 
+    // update driver_verification table after account is created
+    if (userType === "driver" && data.user) {
+      const { error: verificationError } = await supabase
+        .from("driver_verification")
+        .insert({ driver_id: data.user.id });
+      if (verificationError) throw verificationError;
+    }
+
     // a session starts when a user verifies their email
-    if (!session) {
+    if (!data.session) {
       Alert.alert("Please check your inbox for email verification!");
       // clear input fields
       reset();

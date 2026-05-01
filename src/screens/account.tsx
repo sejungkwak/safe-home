@@ -73,7 +73,9 @@ export default function AccountScreen() {
   const [newLicencePhoto, setNewLicencePhoto] = useState<PickedImage | null>(
     null,
   );
-  const [driverVerification, setDriverVerification] = useState<boolean>(false);
+  const [driverVerification, setDriverVerification] = useState<string | null>(
+    null,
+  );
   const profileLoaded = useRef(false);
   const vehicleRef = useRef<TextInput | null>(null);
 
@@ -130,15 +132,19 @@ export default function AccountScreen() {
       }
 
       if (data.driving_licence) {
-        const { data: signedUrlData } = await supabase.storage
-          .from("licences")
-          .createSignedUrl(data.driving_licence, 3600);
+        const { data: signedUrlData, error: signedUrlError } =
+          await supabase.storage
+            .from("licences")
+            .createSignedUrl(data.driving_licence, 3600);
         if (signedUrlData) {
           setLicencePhoto(signedUrlData.signedUrl);
         }
+        if (signedUrlError) throw signedUrlError;
       }
 
-      setDriverVerification(data.driver_verification ?? false);
+      if (data.driver_verification) {
+        setDriverVerification(data.driver_verification.status);
+      }
 
       if (data.vehicle) {
         setVehicleId(data.vehicle.id);
@@ -548,12 +554,22 @@ export default function AccountScreen() {
               />
               <View className="flex-row gap-2 items-center mb-4">
                 <Icon
-                  source={driverVerification ? "check-circle" : "clock-outline"}
+                  source={
+                    driverVerification === "verified"
+                      ? "check-circle"
+                      : driverVerification === "rejected"
+                        ? "cancel"
+                        : "clock-outline"
+                  }
                   size={20}
                   color={colors.onSurface}
                 />
                 <Text variant="bodyMedium" style={{ color: colors.onSurface }}>
-                  {driverVerification ? "Verified" : "Verification pending"}
+                  {driverVerification === "verified"
+                    ? "Verified"
+                    : driverVerification === "rejected"
+                      ? "Awaiting new licence upload"
+                      : "Verification pending"}
                 </Text>
               </View>
             </View>
