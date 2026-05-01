@@ -17,6 +17,8 @@ export default function TabLayout() {
   const { signOut } = useSession();
   const { role } = useRole();
 
+  const isAdmin = role === "admin";
+
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Tabs
@@ -27,10 +29,16 @@ export default function TabLayout() {
         <Tabs.Screen
           name="home"
           options={{
-            title: "Ride Requests",
-            tabBarLabel: "Home",
+            title:
+              role === "driver"
+                ? "Ride Requests"
+                : "Pending Driver Verification",
             headerShown: role !== "rider",
             headerShadowVisible: false,
+            headerRight: isAdmin
+              ? () => <IconButton icon="logout" size={20} onPress={signOut} />
+              : undefined,
+            tabBarLabel: "Home",
             tabBarIcon: ({ color, focused }) => (
               <Ionicons
                 name={focused ? "home" : "home-outline"}
@@ -38,41 +46,44 @@ export default function TabLayout() {
                 color={color}
               />
             ),
+            href: isAdmin ? null : "/home",
           }}
         />
-        <Tabs.Screen
-          name="trips"
-          options={{
-            title: "Trips",
-            headerShown: true,
-            headerShadowVisible: false,
-            tabBarIcon: ({ color, focused }) => (
-              <Ionicons
-                name={focused ? "car" : "car-outline"}
-                size={24}
-                color={color}
-              />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="account"
-          options={{
-            title: "Account",
-            headerShown: true,
-            headerShadowVisible: false,
-            headerRight: () => (
-              <IconButton icon="logout" size={20} onPress={signOut} />
-            ),
-            tabBarIcon: ({ color, focused }) => (
-              <Ionicons
-                name={focused ? "person-circle" : "person-circle-outline"}
-                size={24}
-                color={color}
-              />
-            ),
-          }}
-        />
+        <Tabs.Protected guard={!isAdmin}>
+          <Tabs.Screen
+            name="trips"
+            options={{
+              title: "Trips",
+              headerShown: true,
+              headerShadowVisible: false,
+              tabBarIcon: ({ color, focused }) => (
+                <Ionicons
+                  name={focused ? "car" : "car-outline"}
+                  size={24}
+                  color={color}
+                />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="account"
+            options={{
+              title: "Account",
+              headerShown: true,
+              headerShadowVisible: false,
+              headerRight: () => (
+                <IconButton icon="logout" size={20} onPress={signOut} />
+              ),
+              tabBarIcon: ({ color, focused }) => (
+                <Ionicons
+                  name={focused ? "person-circle" : "person-circle-outline"}
+                  size={24}
+                  color={color}
+                />
+              ),
+            }}
+          />
+        </Tabs.Protected>
       </Tabs>
     </ThemeProvider>
   );
