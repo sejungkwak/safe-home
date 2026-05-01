@@ -7,6 +7,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Icon, useTheme } from "react-native-paper";
 
 import fetchProfile from "@/api/profiles/fetch-profile";
+import DriverApplicationList from "@/components/home/driver-application-list";
 import Request from "@/components/home/request";
 import RequestList from "@/components/home/request-list";
 import Map from "@/components/map/map";
@@ -177,11 +178,8 @@ export default function HomeScreen() {
           </GestureHandlerRootView>
         </>
       )}
-      {role === "driver" && (
-        <>
-          <RequestList />
-        </>
-      )}
+      {role === "driver" && <RequestList />}
+      {role === "admin" && <DriverApplicationList />}
     </ScreenContainer>
   );
 }
