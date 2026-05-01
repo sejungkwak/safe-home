@@ -26,9 +26,9 @@ import { validatePhoneNumber } from "@/lib/validate-phone-number";
 import { signupData, signupSchema } from "@/schemas/sign-up";
 
 /**
- * Renders the registration form containing user types (Rider, Driver, or Both), name,
+ * Renders the registration form containing user types (Rider, Driver), name,
  * phone number, email address, password, and driving licence and profile photo upload fields
- * for Driver/Both user types, along with the Google sign in button.
+ * for Driver user types, along with the Google sign in button.
  * User input is validated with the Zod schema and stored in Supabase Auth if succeessful.
  */
 function SignUpScreen() {
@@ -96,14 +96,14 @@ function SignUpScreen() {
     }
 
     // set error messages for image upload fields
-    if ((userType === "driver" || userType === "both") && !drivingLicence) {
+    if (userType === "driver" && !drivingLicence) {
       setError("drivingLicence", {
         message: "Driving Licence photo is required.",
       });
       return;
     }
 
-    if ((userType === "driver" || userType === "both") && !profilePhoto) {
+    if (userType === "driver" && !profilePhoto) {
       setError("profilePhoto", {
         message: "Profile photo is required.",
       });
@@ -113,7 +113,7 @@ function SignUpScreen() {
     let drivingLicenceUrl: string | null = null;
     let profilePhotoUrl: string | null = null;
 
-    if (userType === "driver" || userType === "both") {
+    if (userType === "driver") {
       drivingLicenceUrl = await uploadImage(values.drivingLicence, "licences");
       profilePhotoUrl = await uploadImage(values.profilePhoto, "profiles");
     }
@@ -170,12 +170,6 @@ function SignUpScreen() {
               <RadioButton.Item
                 label="Driver"
                 value="driver"
-                mode="android"
-                position="leading"
-              />
-              <RadioButton.Item
-                label="Both"
-                value="both"
                 mode="android"
                 position="leading"
               />
@@ -319,7 +313,7 @@ function SignUpScreen() {
                       ? "Change Driving Licence"
                       : "Select Driving Licence"}
                   </Button>
-                  {drivingLicence && (
+                  {userType === "driver" && drivingLicence && (
                     <Card>
                       <Card.Cover source={{ uri: drivingLicence }} />
                     </Card>
@@ -351,7 +345,7 @@ function SignUpScreen() {
                       ? "Change Profile Photo"
                       : "Select Profile Photo"}
                   </Button>
-                  {profilePhoto && (
+                  {userType === "driver" && profilePhoto && (
                     <Card>
                       <Card.Cover source={{ uri: profilePhoto }} />
                     </Card>
