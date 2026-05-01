@@ -1,16 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Alert, ScrollView, View } from "react-native";
-import { HelperText, RadioButton, Text, useTheme } from "react-native-paper";
+import { HelperText, Text, useTheme } from "react-native-paper";
 
 import GoogleSignIn from "@/components/auth/google-sign-in";
 import HorizontalLine from "@/components/ui/horizontal-line";
 import InputField from "@/components/ui/input-field";
 import PrimaryButton from "@/components/ui/primary-button";
 import ScreenContainer from "@/components/ui/screen-container";
-import { useRole } from "@/context/role";
 import { supabase } from "@/lib/supabase";
 import { signinData, signinSchema } from "@/schemas/sign-in";
 
@@ -20,84 +19,30 @@ import { signinData, signinSchema } from "@/schemas/sign-in";
  */
 function SigninScreen() {
   const { colors } = useTheme();
-  const { setRole } = useRole();
-  const [userType, setUserType] = useState("rider");
 
-  // initialise React Hook Form with Zod schema validation
   const {
     handleSubmit,
     control,
-    clearErrors,
     formState: { errors },
   } = useForm<signinData>({
     resolver: zodResolver(signinSchema),
     defaultValues: { email: "", password: "" },
   });
 
-  // clear error messages on user type changes.
-  useEffect(() => {
-    clearErrors();
-  }, [userType, clearErrors]);
-
-  /**
-   * Submits the user input data after validation has passed.
-   */
   async function onSubmit(values: signinData) {
-    // retrieve the user role from database for the entered email
-    const { data: userProfile, error: userTypeError } = await supabase
-      .from("profile")
-      .select("role, email")
-      .eq("email", values.email)
-      .contains("role", [userType])
-      .single();
-
-    if (!userProfile || userTypeError) {
-      Alert.alert(
-        "Invalid login credentials",
-        "The information you entered does not match our records.",
-      );
-      await supabase.auth.signOut();
-      return;
-    }
-
-    // pass the validated email and password to Supabase Auth
     const { error } = await supabase.auth.signInWithPassword({
       email: values.email,
       password: values.password,
     });
-    // display the error message if authentication fails
     if (error) {
       Alert.alert(error.message);
-      return;
     }
-
-    // store userType in React context
-    setRole(userType);
   }
 
   return (
     <ScreenContainer>
       <ScrollView>
         <View className="mb-4">
-          <RadioButton.Group
-            onValueChange={(value) => setUserType(value)}
-            value={userType}
-          >
-            <View className="flex-row">
-              <RadioButton.Item
-                label="Rider"
-                value="rider"
-                mode="android"
-                position="leading"
-              />
-              <RadioButton.Item
-                label="Driver"
-                value="driver"
-                mode="android"
-                position="leading"
-              />
-            </View>
-          </RadioButton.Group>
           <View>
             <Controller
               control={control}

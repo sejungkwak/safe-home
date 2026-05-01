@@ -8,8 +8,6 @@ import { useState } from "react";
 import { View } from "react-native";
 import { HelperText } from "react-native-paper";
 
-import fetchProfile from "@/api/profiles/fetch-profile";
-import { useRole } from "@/context/role";
 import { supabase } from "@/lib/supabase";
 import GoogleSignInButton from "./google-sign-in-button";
 
@@ -19,7 +17,6 @@ import GoogleSignInButton from "./google-sign-in-button";
  */
 export default function GoogleSignIn() {
   const [error, setError] = useState<string | null>(null);
-  const { setRole } = useRole();
 
   /**
    * Initiates the sign in flow when the button is pressed.
@@ -42,21 +39,12 @@ export default function GoogleSignIn() {
         if (response.data.idToken) {
           // Supabase verifies the ID token against Google's public key
           // if successful, user data (name, email, avatar/photo) is stored in the database.
-          const { data, error: supabaseError } =
+          const { error: supabaseError } =
             await supabase.auth.signInWithIdToken({
               provider: "google",
               token: response.data.idToken,
             });
           if (supabaseError) throw supabaseError;
-
-          // set user role
-          const userId = data.user?.id;
-          if (userId) {
-            const profile = await fetchProfile(userId);
-            if (profile?.role?.length > 0) {
-              setRole(profile.role[0]);
-            }
-          }
         } else {
           throw new Error("No ID Token present.");
         }
