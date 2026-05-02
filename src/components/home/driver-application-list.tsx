@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Linking, ScrollView, View } from "react-native";
+import { Alert, Linking, ScrollView, View } from "react-native";
 import { Button, Card, Text, TextInput } from "react-native-paper";
 
 import formatDate from "@/lib/format-date";
@@ -64,6 +64,40 @@ export default function DriverApplicationList() {
     getNewApplications();
   }, []);
 
+  // handle Reject button press
+  // update reason and status columns on driver_verification table
+  async function handleReject(id: string) {
+    if (text === "" || !text) {
+      return Alert.alert("Please enter a reason for rejection.");
+    }
+
+    const { error } = await supabase
+      .from("driver_verification")
+      .update({
+        rejection_reason: text,
+        status: "rejected",
+        reviewed_at: new Date().toISOString(),
+      })
+      .eq("id", id);
+    if (error) throw error;
+    setApplications(
+      applications.filter((application) => application.id !== id),
+    );
+  }
+
+  // handle Verify button press
+  // update status on driver_verification table
+  async function handleVerify(id: string) {
+    const { error } = await supabase
+      .from("driver_verification")
+      .update({ status: "verified", reviewed_at: new Date().toISOString() })
+      .eq("id", id);
+    if (error) throw error;
+    setApplications(
+      applications.filter((application) => application.id !== id),
+    );
+  }
+
   if (applications.length === 0) {
     return (
       <Text variant="titleLarge" style={{ marginLeft: 20, marginTop: 8 }}>
@@ -102,8 +136,20 @@ export default function DriverApplicationList() {
             />
           </Card.Content>
           <Card.Actions>
-            <Button>Reject</Button>
-            <Button>Verify</Button>
+            <Button
+              onPress={() => {
+                handleReject(driver.id);
+              }}
+            >
+              Reject
+            </Button>
+            <Button
+              onPress={() => {
+                handleVerify(driver.id);
+              }}
+            >
+              Verify
+            </Button>
           </Card.Actions>
         </Card>
       ))}
