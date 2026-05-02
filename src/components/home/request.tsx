@@ -59,6 +59,8 @@ export default function Request({
       const userProfile = await fetchProfile(user.id);
       if (!userProfile) return;
 
+      if (!userProfile.vehicle) return;
+
       setReg(userProfile.vehicle.reg);
       setTransmission(userProfile.vehicle.transmission_type);
     }
@@ -130,14 +132,25 @@ export default function Request({
           </View>
         ) : (
           <View>
-            <Button onPress={() => {}}>Add my vehicle</Button>
+            <Button
+              onPress={() => {
+                router.push({
+                  pathname: "/(tabs)/account",
+                  params: { focus: "vehicleReg" },
+                });
+              }}
+            >
+              Add your vehicle to request a driver
+            </Button>
           </View>
         )}
       </View>
       <View className="mb-4">
         <ChipButton icon="wallet-outline">€{fare} (Cash)</ChipButton>
       </View>
-      <PrimaryButton onPress={onSubmit}>Request</PrimaryButton>
+      <PrimaryButton disabled={!reg} onPress={onSubmit}>
+        Request
+      </PrimaryButton>
     </View>
   );
 }
