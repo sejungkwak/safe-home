@@ -15,7 +15,7 @@ type TripContextType = {
   resetKey: number;
   setOrigin: (coords: Coords | null) => void;
   setDestination: (coords: Coords | null) => void;
-  setRouteInfo: (route: { distance: number; duration: number }) => void;
+  setRouteInfo: (route: { distance: number; duration: number } | null) => void;
   setFare: (fare: number) => void;
   setDateTime: (dateTime: Date) => void;
   resetTrip: () => void;

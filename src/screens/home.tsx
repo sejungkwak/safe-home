@@ -123,7 +123,10 @@ export default function HomeScreen() {
                   icon="circle-slice-8"
                   searchFor="origin"
                   onSelect={setOrigin}
-                  onClear={() => setOrigin(null)}
+                  onClear={() => {
+                    setOrigin(null);
+                    setRouteInfo(null);
+                  }}
                   defaultValue={origin?.address}
                 />
                 {/* destination location */}
@@ -134,7 +137,10 @@ export default function HomeScreen() {
                     icon="map-marker-outline"
                     searchFor="destination"
                     onSelect={setDestination}
-                    onClear={() => setDestination(null)}
+                    onClear={() => {
+                      setDestination(null);
+                      setRouteInfo(null);
+                    }}
                     defaultValue={destination?.address}
                   />
                   <ChipButton
