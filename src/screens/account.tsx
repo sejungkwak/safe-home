@@ -225,6 +225,12 @@ export default function AccountScreen() {
       if (isDriver) {
         if (newLicencePhoto) {
           drivingLicencePath = await uploadImage(newLicencePhoto, "licences");
+          // update status in driver_verification table
+          const { error: verificationUpdateError } = await supabase
+            .from("driver_verification")
+            .update({ status: "resubmitted" })
+            .eq("driver_id", user.id);
+          if (verificationUpdateError) throw verificationUpdateError;
         }
 
         await updateProfile({
