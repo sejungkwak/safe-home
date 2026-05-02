@@ -562,9 +562,21 @@ export default function AccountScreen() {
                         : "clock-outline"
                   }
                   size={20}
-                  color={colors.onSurface}
+                  color={
+                    driverVerification === "rejected"
+                      ? colors.error
+                      : colors.onSurface
+                  }
                 />
-                <Text variant="bodyMedium" style={{ color: colors.onSurface }}>
+                <Text
+                  variant="bodyMedium"
+                  style={{
+                    color:
+                      driverVerification === "rejected"
+                        ? colors.error
+                        : colors.onSurface,
+                  }}
+                >
                   {driverVerification === "verified"
                     ? "Verified"
                     : driverVerification === "rejected"

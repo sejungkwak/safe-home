@@ -141,10 +141,24 @@ function SignUpScreen() {
 
     // update driver_verification table after account is created
     if (userType === "driver" && data.user) {
-      const { error: verificationError } = await supabase
-        .from("driver_verification")
-        .insert({ driver_id: data.user.id });
+      const { data: verificationData, error: verificationError } =
+        await supabase
+          .from("driver_verification")
+          .insert({ driver_id: data.user.id })
+          .select()
+          .single();
+
       if (verificationError) throw verificationError;
+
+      // add driver_verification_status_id to profile table
+      if (verificationData) {
+        const { error: verificationUpdateError } = await supabase
+          .from("profile")
+          .update({ driver_verification_status_id: verificationData.id })
+          .eq("id", data.user.id);
+
+        if (verificationUpdateError) throw error;
+      }
     }
 
     // a session starts when a user verifies their email
