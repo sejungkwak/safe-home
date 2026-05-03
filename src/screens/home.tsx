@@ -1,7 +1,7 @@
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { cssInterop } from "nativewind";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, Pressable, Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Icon, useTheme } from "react-native-paper";
@@ -80,15 +80,16 @@ export default function HomeScreen() {
     originRef.current = true;
   }, [location, setOrigin]);
 
-  useEffect(() => {
-    async function getAddress() {
-      if (!user) return;
-
-      const userProfile = await fetchProfile(user.id);
-      setSavedAddress(userProfile.address);
-    }
-    getAddress();
-  }, [user]);
+  useFocusEffect(
+    useCallback(() => {
+      async function getAddress() {
+        if (!user) return;
+        const userProfile = await fetchProfile(user.id);
+        setSavedAddress(userProfile.address);
+      }
+      getAddress();
+    }, [user]),
+  );
 
   return (
     <ScreenContainer>
@@ -176,7 +177,16 @@ export default function HomeScreen() {
                 {origin && destination && routeInfo && (
                   <Request
                     distance={routeInfo.distance ?? 0}
-                    onReset={() => setMapSearchKey((key) => key + 1)}
+                    onReset={() => {
+                      setMapSearchKey((key) => key + 1);
+                      if (location) {
+                        setOrigin({
+                          latitude: location.latitude,
+                          longitude: location.longitude,
+                          address: location.address,
+                        });
+                      }
+                    }}
                   />
                 )}
               </BottomSheetView>

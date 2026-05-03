@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Alert, Linking, ScrollView, View } from "react-native";
 import { Button, Card, Text, TextInput } from "react-native-paper";
 
@@ -22,47 +22,72 @@ export default function DriverApplicationList() {
   const [applications, setApplications] = useState<DriverApplication[]>([]);
   const [text, setText] = useState("");
 
-  useEffect(() => {
-    // retrieve pending or resubmitted applications
-    async function getNewApplications() {
-      const { data, error } = await supabase
-        .from("driver_verification")
-        .select("id, created_at, driver_id(name, email, driving_licence)")
-        .in("status", ["pending", "resubmitted"]);
+  // retrieve pending or resubmitted applications
+  const getNewApplications = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("driver_verification")
+      .select("id, created_at, driver_id(name, email, driving_licence)")
+      .in("status", ["pending", "resubmitted"]);
 
-      if (error) throw error;
-      if (!data || data.length === 0) return;
+    if (error) throw error;
 
-      const applicationArray = await Promise.all(
-        data.map(async (row) => {
-          const profile = row.driver_id as any;
-          let licenceUrl: string | null = null;
-
-          if (profile.driving_licence) {
-            const { data: signedData } = await supabase.storage
-              .from("licences")
-              .createSignedUrl(profile.driving_licence, 3600);
-            licenceUrl = signedData?.signedUrl ?? null;
-          }
-
-          const { formattedDate, formattedTime } = formatDate(
-            new Date(row.created_at),
-          );
-          return {
-            id: row.id,
-            name: profile.name,
-            email: profile.email,
-            created_at: `${formattedDate} ${formattedTime}`,
-            licenceUrl,
-          };
-        }),
-      );
-
-      setApplications(applicationArray);
+    if (!data || data.length === 0) {
+      setApplications([]);
+      return;
     }
 
-    getNewApplications();
+    const applicationArray = await Promise.all(
+      data.map(async (row) => {
+        const profile = row.driver_id as any;
+        let licenceUrl: string | null = null;
+
+        if (profile.driving_licence) {
+          const { data: signedData } = await supabase.storage
+            .from("licences")
+            .createSignedUrl(profile.driving_licence, 3600);
+          licenceUrl = signedData?.signedUrl ?? null;
+        }
+
+        const { formattedDate, formattedTime } = formatDate(
+          new Date(row.created_at),
+        );
+        return {
+          id: row.id,
+          name: profile.name,
+          email: profile.email,
+          created_at: `${formattedDate} ${formattedTime}`,
+          licenceUrl,
+        };
+      }),
+    );
+
+    setApplications(applicationArray);
   }, []);
+
+  useEffect(() => {
+    getNewApplications();
+
+    // Supabase realtime event handler
+    // listen to new driver registration or licence photo updates,
+    // and call getNewApplications when it happens.
+    const channel = supabase
+      .channel("driver-applications")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "driver_verification" },
+        () => getNewApplications(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "driver_verification" },
+        () => getNewApplications(),
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [getNewApplications]);
 
   // handle Reject button press
   // update reason and status columns on driver_verification table
