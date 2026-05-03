@@ -1,7 +1,7 @@
 import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
-import { Platform } from "react-native";
+import { Alert, Platform } from "react-native";
 
 /**
  * Prepares the notification channel for Android.
@@ -16,7 +16,10 @@ export async function registerForPushNotificationsAsync() {
 
   // a real physical device is needed  push to receive push notifications
   if (!Device.isDevice) {
-    throw new Error("Must use physical device for Push Notifications");
+    Alert.alert(
+      "Physical Device Required",
+      "Push notifications can only be received on a physical device.",
+    );
   }
 
   // prepare the notification channel for Android
