@@ -145,7 +145,6 @@ export default function MapSearch({
       query={{
         key: process.env.EXPO_PUBLIC_GOOGLE_API_KEY,
         language: "en",
-        types: "address",
         components: "country:ie", // limit results to Ireland
       }}
       disableScroll
