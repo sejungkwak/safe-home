@@ -618,7 +618,9 @@ export default function AccountScreen() {
           </>
         )}
 
-        <PrimaryButton onPress={handleSubmit(onSubmit)}>Update</PrimaryButton>
+        <View className="mb-6">
+          <PrimaryButton onPress={handleSubmit(onSubmit)}>Update</PrimaryButton>
+        </View>
       </ScrollView>
     </ScreenContainer>
   );
