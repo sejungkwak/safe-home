@@ -12,7 +12,8 @@ export default async function fetchTrip(id: string, role: string) {
     const { data, error } = await supabase
       .from("trip")
       .select("*")
-      .eq("rider_id", id);
+      .eq("rider_id", id)
+      .order("start_time", { ascending: false });
 
     if (error) throw error;
 
@@ -21,7 +22,8 @@ export default async function fetchTrip(id: string, role: string) {
     const { data, error } = await supabase
       .from("trip")
       .select("*")
-      .eq("driver_id", id);
+      .eq("driver_id", id)
+      .order("start_time", { ascending: false });
 
     if (error) throw error;
 
