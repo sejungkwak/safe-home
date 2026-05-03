@@ -61,16 +61,16 @@ export default async function updateProfile(
 
   let newVehicleId = vehicleId;
 
-  if (vehicleReg) {
+  if (vehicleReg !== undefined) {
     if (vehicleId) {
       // update the vehicle row if the ID exists
       await updateVehicle(
         vehicleId,
         vehicleReg,
-        vehicleTransmission ?? "menual",
+        vehicleTransmission ?? "manual",
       );
-    } else {
-      // insert a new vehicle record.
+    } else if (vehicleReg) {
+      // insert a new vehicle record only when a reg is provided
       const vehicleData = await createVehicle(
         vehicleReg,
         vehicleTransmission ?? "manual",
