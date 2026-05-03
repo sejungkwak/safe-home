@@ -183,7 +183,7 @@ function SignUpScreen() {
               />
             </View>
           </RadioButton.Group>
-          <View>
+          <View className="mx-2">
             <Controller
               name="name"
               control={control}
@@ -304,70 +304,72 @@ function SignUpScreen() {
                 </View>
               )}
             />
-            <Controller
-              name="drivingLicence"
-              control={control}
-              render={() => (
-                <View>
-                  <Button
-                    icon="file-upload"
-                    mode="outlined"
-                    onPress={() => {
-                      onSelectImage("drivingLicence");
-                    }}
-                    disabled={userType === "rider"}
-                  >
-                    {drivingLicence
-                      ? "Change Driving Licence"
-                      : "Select Driving Licence"}
-                  </Button>
-                  {userType === "driver" && drivingLicence && (
-                    <Card>
-                      <Card.Cover source={{ uri: drivingLicence }} />
-                    </Card>
+            {userType === "driver" && (
+              <>
+                <Controller
+                  name="drivingLicence"
+                  control={control}
+                  render={() => (
+                    <View>
+                      <Button
+                        icon="file-upload"
+                        mode="outlined"
+                        onPress={() => {
+                          onSelectImage("drivingLicence");
+                        }}
+                      >
+                        {drivingLicence
+                          ? "Change Driving Licence"
+                          : "Select Driving Licence"}
+                      </Button>
+                      {drivingLicence && (
+                        <Card>
+                          <Card.Cover source={{ uri: drivingLicence }} />
+                        </Card>
+                      )}
+                      <HelperText
+                        type="error"
+                        visible={!!errors.drivingLicence}
+                        padding="none"
+                      >
+                        {errors.drivingLicence?.message?.toString()}
+                      </HelperText>
+                    </View>
                   )}
-                  <HelperText
-                    type="error"
-                    visible={!!errors.drivingLicence}
-                    padding="none"
-                  >
-                    {errors.drivingLicence?.message?.toString()}
-                  </HelperText>
-                </View>
-              )}
-            />
-            <Controller
-              name="profilePhoto"
-              control={control}
-              render={() => (
-                <View>
-                  <Button
-                    icon="file-upload"
-                    mode="outlined"
-                    onPress={() => {
-                      onSelectImage("profilePhoto");
-                    }}
-                    disabled={userType === "rider"}
-                  >
-                    {profilePhoto
-                      ? "Change Profile Photo"
-                      : "Select Profile Photo"}
-                  </Button>
-                  {userType === "driver" && profilePhoto && (
-                    <Card>
-                      <Card.Cover source={{ uri: profilePhoto }} />
-                    </Card>
+                />
+                <Controller
+                  name="profilePhoto"
+                  control={control}
+                  render={() => (
+                    <View>
+                      <Button
+                        icon="file-upload"
+                        mode="outlined"
+                        onPress={() => {
+                          onSelectImage("profilePhoto");
+                        }}
+                      >
+                        {profilePhoto
+                          ? "Change Profile Photo"
+                          : "Select Profile Photo"}
+                      </Button>
+                      {profilePhoto && (
+                        <Card>
+                          <Card.Cover source={{ uri: profilePhoto }} />
+                        </Card>
+                      )}
+                      <HelperText
+                        type="error"
+                        visible={!!errors.profilePhoto}
+                        padding="none"
+                      >
+                        {errors.profilePhoto?.message?.toString()}
+                      </HelperText>
+                    </View>
                   )}
-                  <HelperText
-                    type="error"
-                    visible={!!errors.profilePhoto}
-                    padding="none"
-                  >
-                    {errors.profilePhoto?.message?.toString()}
-                  </HelperText>
-                </View>
-              )}
-            />
+                />
+              </>
+            )}
           </View>
           <PrimaryButton onPress={handleSubmit(onSubmit)}>
             Sign Up
