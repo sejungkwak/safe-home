@@ -231,9 +231,7 @@ ALTER TABLE "public"."trip" OWNER TO "postgres";
 
 CREATE TABLE IF NOT EXISTS "public"."vehicle" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "make" "text",
-    "colour" "text",
-    "reg" "text" NOT NULL,
+    "reg" "text",
     "transmission_type" "public"."transmission_type" DEFAULT 'manual'::"public"."transmission_type" NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"(),
     "updated_at" timestamp with time zone DEFAULT "now"()
@@ -294,11 +292,6 @@ ALTER TABLE ONLY "public"."trip"
 
 ALTER TABLE ONLY "public"."vehicle"
     ADD CONSTRAINT "vehicle_pkey" PRIMARY KEY ("id");
-
-
-
-ALTER TABLE ONLY "public"."vehicle"
-    ADD CONSTRAINT "vehicle_reg_key" UNIQUE ("reg");
 
 
 

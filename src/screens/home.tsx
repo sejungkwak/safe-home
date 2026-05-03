@@ -54,6 +54,10 @@ export default function HomeScreen() {
 
   const [sheetHeight, setSheetHeight] = useState<number>(0);
   const [mapSearchKey, setMapSearchKey] = useState(0);
+  const [savedReg, setSavedReg] = useState<string | null>(null);
+  const [savedTransmission, setSavedTransmission] = useState<string | null>(
+    null,
+  );
   const [savedAddress, setSavedAddress] = useState<{
     latitude: number;
     longitude: number;
@@ -83,12 +87,18 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       async function getAddress() {
-        if (!user) return;
+        if (!user || role !== "rider") return;
         const userProfile = await fetchProfile(user.id);
         setSavedAddress(userProfile.address);
+
+        const reg = userProfile.vehicle?.reg || null;
+        const transmission = userProfile.vehicle?.transmission_type || null;
+
+        setSavedReg(reg);
+        setSavedTransmission(transmission);
       }
       getAddress();
-    }, [user]),
+    }, [user, role]),
   );
 
   if (isLoading) return null;
@@ -146,16 +156,17 @@ export default function HomeScreen() {
                     }}
                     defaultValue={destination?.address}
                   />
-                  <ChipButton
-                    icon="calendar-clock-outline"
-                    className="absolute top-2 right-4"
-                    disabled={!routeInfo}
-                    onPress={() => {
-                      router.push("/booking");
-                    }}
-                  >
-                    Later
-                  </ChipButton>
+                  {routeInfo && savedReg && savedTransmission && (
+                    <ChipButton
+                      icon="calendar-clock-outline"
+                      className="absolute top-2 right-4"
+                      onPress={() => {
+                        router.push("/booking");
+                      }}
+                    >
+                      Later
+                    </ChipButton>
+                  )}
                 </View>
                 {savedAddress && !destination && (
                   <Pressable
