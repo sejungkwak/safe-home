@@ -7,6 +7,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useTheme } from "react-native-paper";
 
 import createNotification from "@/api/notifications/create-notification";
+import fetchProfile from "@/api/profiles/fetch-profile";
 import createRating from "@/api/ratings/create-rating";
 import fetchRating from "@/api/ratings/fetch-rating";
 import cancelTrip from "@/api/trips/cancel-trip";
@@ -96,15 +97,8 @@ export default function TripDetails() {
       if (!data) return;
 
       // get rider name and vehicle information
-      const { data: riderData, error: riderError } = await supabase
-        .from("profile")
-        .select(
-          "id, name, phone, profile_photo, expo_push_token, vehicle:vehicle_id (reg, transmission_type)",
-        )
-        .eq("id", data.rider_id)
-        .single();
+      const riderData = await fetchProfile(data.rider_id);
 
-      if (riderError) throw riderError;
       if (!riderData) return;
 
       if (riderData.profile_photo) {
@@ -134,13 +128,7 @@ export default function TripDetails() {
         data.driver_id &&
         (data.status !== "pending" || data.status !== "expired")
       ) {
-        const { data: driverData, error: driverError } = await supabase
-          .from("profile")
-          .select("id, name, phone, profile_photo, expo_push_token")
-          .eq("id", data.driver_id)
-          .single();
-
-        if (driverError) throw driverError;
+        const driverData = await fetchProfile(data.driver_id);
         if (driverData && isMounted) {
           setDriverId(driverData.id);
           setDriverName(driverData.name);
@@ -179,8 +167,11 @@ export default function TripDetails() {
         setRiderName(riderData.name);
         setRiderPhone(riderData.phone);
         setRiderPushToken(riderData.expo_push_token);
-        setReg(data.vehicle?.reg);
-        setTransmission(data.vehicle?.transmission_type);
+        setReg(riderData.vehicle?.reg);
+        setTransmission(
+          riderData.vehicle?.transmission_type.charAt(0).toUpperCase() +
+            riderData.vehicle?.transmission_type.slice(1),
+        );
         setOrigin(data.start_location);
         setDestination(data.end_location);
         setPickupTime(stringifiedTime);
