@@ -51,7 +51,7 @@ function SigninScreen() {
         </View>
 
         <View className="mb-4">
-          <View>
+          <View className="mx-2">
             <Controller
               control={control}
               name="email"
