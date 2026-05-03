@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Image } from "expo-image";
-import { useLocalSearchParams } from "expo-router";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
@@ -169,9 +169,11 @@ export default function AccountScreen() {
     }
   }, [user, setValue, isDriver]);
 
-  useEffect(() => {
-    loadProfile();
-  }, [loadProfile]);
+  useFocusEffect(
+    useCallback(() => {
+      loadProfile();
+    }, [loadProfile]),
+  );
 
   useEffect(() => {
     if (focus === "vehicleReg") vehicleRef.current?.focus();
@@ -233,12 +235,6 @@ export default function AccountScreen() {
       if (isDriver) {
         if (newLicencePhoto) {
           drivingLicencePath = await uploadImage(newLicencePhoto, "licences");
-          // update status in driver_verification table
-          const { error: verificationUpdateError } = await supabase
-            .from("driver_verification")
-            .update({ status: "resubmitted" })
-            .eq("driver_id", user.id);
-          if (verificationUpdateError) throw verificationUpdateError;
         }
 
         await updateProfile({
@@ -250,6 +246,15 @@ export default function AccountScreen() {
           drivingLicencePath,
           resetPassword: values.resetPassword || undefined,
         });
+
+        // update status in driver_verification table
+        if (newLicencePhoto) {
+          const { error: verificationUpdateError } = await supabase
+            .from("driver_verification")
+            .update({ status: "resubmitted" })
+            .eq("driver_id", user.id);
+          if (verificationUpdateError) throw verificationUpdateError;
+        }
       } else {
         await updateProfile({
           userId: user.id,

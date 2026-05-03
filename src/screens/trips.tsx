@@ -1,5 +1,5 @@
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { RadioButton, Text } from "react-native-paper";
 
@@ -10,6 +10,7 @@ import TripCard from "@/components/ui/trip-card";
 import { useSession } from "@/context/auth";
 import { useRole } from "@/context/role";
 import formatDate from "@/lib/format-date";
+import { supabase } from "@/lib/supabase";
 
 type Trip = {
   id: string;
@@ -40,63 +41,87 @@ function TripsScreen() {
   const [upcomingTrips, setUpcomingTrips] = useState<Trip[]>([]);
   const [pastTrips, setPastTrips] = useState<Trip[]>([]);
 
-  useEffect(() => {
-    /**
-     * Updates trips status to "expired"
-     * if they are requested more than an hour ago,
-     * but still pending.
-     */
-    async function cleanUpTrips() {
-      await expireTrip();
+  /**
+   * Retrieves trip data, categorises them into upcoming
+   * or past trips based on each trip's start time,
+   * and stores them in upcomingTrips or pastTrips.
+   */
+  const getTrips = useCallback(async () => {
+    if (!user || !role) return;
+
+    const data = await fetchTrip(user.id, role);
+
+    function formatStartDate(startDate: string) {
+      const { formattedDate, formattedTime } = formatDate(
+        startDate ? new Date(startDate) : undefined,
+      );
+      return { formattedDate, formattedTime };
     }
 
-    /**
-     * Retrieves trip data, categorises them into upcoming
-     * or past trips based on each trip's start time,
-     * and stores them in upcomingTrips or pastTrips.
-     */
-    async function getTrips() {
-      if (!user || !role) return;
+    // start time is in the future, and not cancelled trips
+    setUpcomingTrips(
+      data
+        .filter(
+          (trip) =>
+            trip.status === "pending" ||
+            trip.status === "driver_accepted" ||
+            trip.status === "rider_accepted" ||
+            trip.status === "in_progress",
+        )
+        .map((trip) => ({ ...trip, ...formatStartDate(trip.start_time) })),
+    );
 
-      const data = await fetchTrip(user.id, role);
-
-      function formatStartDate(startDate: string) {
-        const { formattedDate, formattedTime } = formatDate(
-          startDate ? new Date(startDate) : undefined,
-        );
-        return { formattedDate, formattedTime };
-      }
-
-      // start time is in the future, and not cancelled trips
-      setUpcomingTrips(
-        data
-          .filter(
-            (trip) =>
-              trip.status === "pending" ||
-              trip.status === "driver_accepted" ||
-              trip.status === "rider_accepted" ||
-              trip.status === "in_progress",
-          )
-          .map((trip) => ({ ...trip, ...formatStartDate(trip.start_time) })),
-      );
-
-      // start time is in the past, or cancelled trips
-      setPastTrips(
-        data
-          .filter(
-            (trip) =>
-              trip.status === "completed" ||
-              trip.status === "expired" ||
-              trip.status === "driver_cancelled" ||
-              trip.status === "rider_cancelled",
-          )
-          .map((trip) => ({ ...trip, ...formatStartDate(trip.start_time) })),
-      );
-    }
-
-    cleanUpTrips();
-    getTrips();
+    // start time is in the past, or cancelled trips
+    setPastTrips(
+      data
+        .filter(
+          (trip) =>
+            trip.status === "completed" ||
+            trip.status === "expired" ||
+            trip.status === "driver_cancelled" ||
+            trip.status === "rider_cancelled",
+        )
+        .map((trip) => ({ ...trip, ...formatStartDate(trip.start_time) })),
+    );
   }, [user, role]);
+
+  useFocusEffect(
+    useCallback(() => {
+      expireTrip();
+      getTrips();
+    }, [getTrips]),
+  );
+
+  useEffect(() => {
+    if (!user) return;
+
+    // listen to new trip or updates, and call getTrips when it happens.
+    const channel = supabase
+      .channel("driver-trips")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "trip",
+        },
+        () => getTrips(),
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "trip",
+        },
+        () => getTrips(),
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, getTrips]);
 
   const tripsToShow = timeline === "upcoming" ? upcomingTrips : pastTrips;
 

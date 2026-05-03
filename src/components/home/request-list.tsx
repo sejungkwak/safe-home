@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Pressable, ScrollView } from "react-native";
 import { Text } from "react-native-paper";
 
@@ -25,32 +25,34 @@ export default function RequestList() {
     }[]
   >([]);
 
-  useEffect(() => {
-    // retrieve pending trip data
-    const fetchTrips = async () => {
-      const { data, error } = await supabase
-        .from("trip")
-        .select(
-          "id, rider_id, start_location, end_location, start_time, fare, status",
-        )
-        .eq("status", "pending")
-        .order("start_time");
+  // retrieve pending trip data
+  const fetchTrips = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("trip")
+      .select(
+        "id, rider_id, start_location, end_location, start_time, fare, status",
+      )
+      .eq("status", "pending")
+      .order("start_time");
 
-      if (error) throw error;
+    if (error) throw error;
 
-      if (!data || data.length === 0) return;
+    if (!data || data.length === 0) {
+      setTrips([]);
+      return;
+    }
 
-      // filter trips whose start time is within the last 30 minutes or later
-      // 30 minutes is arbitrary, but it allows recently added trip requests
-      // to remain visible, since start_time is set to the request time.
-      const validList = data.filter((row) => {
-        const startTime = new Date(row.start_time).getTime();
-        const now = Date.now();
+    // filter trips whose start time is within the last 30 minutes or later
+    // 30 minutes is arbitrary, but it allows recently added trip requests
+    // to remain visible, since start_time is set to the request time.
+    const validList = data.filter((row) => {
+      const startTime = new Date(row.start_time).getTime();
+      const now = Date.now();
+      return startTime >= now - 30 * 60 * 1000;
+    });
 
-        return startTime >= now - 30 * 60 * 1000;
-      });
-
-      return validList.map((row) => {
+    setTrips(
+      validList.map((row) => {
         const startTime = new Date(row.start_time).getTime();
         const now = Date.now();
 
@@ -65,15 +67,32 @@ export default function RequestList() {
           leftText:
             startTime >= past30 && startTime <= future59 ? "ASAP" : "Later",
         };
-      });
-    };
-
-    fetchTrips().then((data) => {
-      if (data) {
-        setTrips(data);
-      }
-    });
+      }),
+    );
   }, []);
+
+  useEffect(() => {
+    fetchTrips();
+
+    // listen to new trip or updates, and call fetchTrips when it happens.
+    const channel = supabase
+      .channel("pending-trips")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "trip" },
+        () => fetchTrips(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "trip" },
+        () => fetchTrips(),
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchTrips]);
 
   return (
     <ScrollView className="mt-4">

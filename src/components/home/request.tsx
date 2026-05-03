@@ -1,5 +1,5 @@
-import { router } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Text, View } from "react-native";
 import { Button, Icon, useTheme } from "react-native-paper";
 
@@ -52,20 +52,18 @@ export default function Request({
     setFare(fare);
   }, [fare, setFare]);
 
-  useEffect(() => {
-    async function getReg() {
-      if (!user) return;
-
-      const userProfile = await fetchProfile(user.id);
-      if (!userProfile) return;
-
-      if (!userProfile.vehicle) return;
-
-      setReg(userProfile.vehicle.reg);
-      setTransmission(userProfile.vehicle.transmission_type);
-    }
-    getReg();
-  }, [user]);
+  useFocusEffect(
+    useCallback(() => {
+      async function getReg() {
+        if (!user) return;
+        const userProfile = await fetchProfile(user.id);
+        if (!userProfile?.vehicle) return;
+        setReg(userProfile.vehicle.reg);
+        setTransmission(userProfile.vehicle.transmission_type);
+      }
+      getReg();
+    }, [user]),
+  );
 
   /**
    * handles the Request button press.
