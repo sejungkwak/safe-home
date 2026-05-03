@@ -9,9 +9,7 @@ import { supabase } from "../../lib/supabase";
 export default async function fetchProfile(userId: string) {
   const { data, error } = await supabase
     .from("profile")
-    .select(
-      `*, vehicle(*), driver_verification!profile_driver_verification_status_id_fkey(*)`,
-    )
+    .select(`*, vehicle(*)`)
     .eq("id", userId)
     .single();
 

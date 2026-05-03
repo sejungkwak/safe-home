@@ -37,21 +37,27 @@ export default async function createNotification({
 
   switch (notificationType) {
     case "ride_requested": {
-      // retrieve drivers IDs and Expo push tokens
+      // retrieve verified drivers IDs and Expo push tokens
       const { data: recipients, error: recipientsError } = await supabase
-        .from("profile")
-        .select("id, expo_push_token")
-        .contains("role", ["driver"])
-        .not("expo_push_token", "is", null);
+        .from("driver_verification")
+        .select("status, profile(id, role, expo_push_token)")
+        .match({ status: "verified", "profile.role": "driver" })
+        .not("profile.expo_push_token", "is", null);
 
       if (recipientsError) throw recipientsError;
 
-      // insert a new to the notification table
+      // insert a new entry to the notification table
       for (const recipient of recipients) {
+        const profile = Array.isArray(recipient.profile)
+          ? recipient.profile[0]
+          : recipient.profile;
+
+        if (!profile) continue;
+
         const { error } = await supabase.from("notification").insert({
           user_id: riderId,
-          recipient_id: recipient.id,
-          recipient_token: recipient.expo_push_token,
+          recipient_id: profile.id,
+          recipient_token: profile.expo_push_token,
           title: "A new ride request",
           body: `From: ${origin.address}\nTo: ${destination.address}\nOn: ${formattedDate} at ${formattedTime}`,
           type: "ride_requested",
@@ -111,6 +117,7 @@ export default async function createNotification({
       break;
     }
 
+    // send notifications to rider and other drivers
     case "driver_cancelled": {
       const { error } = await supabase.from("notification").insert({
         user_id: driverId,
@@ -124,6 +131,36 @@ export default async function createNotification({
 
       if (error) throw error;
 
+      // retrieve verified drivers except the driver who cancelled the trip
+      const { data: recipients, error: recipientsError } = await supabase
+        .from("driver_verification")
+        .select("status, profile(id, role, expo_push_token)")
+        .match({ status: "verified", "profile.role": "driver" })
+        .not("profile.expo_push_token", "is", null)
+        .neq("profile.id", driverId);
+
+      if (recipientsError) throw recipientsError;
+
+      // insert a new entry to the notification table
+      for (const recipient of recipients) {
+        const profile = Array.isArray(recipient.profile)
+          ? recipient.profile[0]
+          : recipient.profile;
+
+        if (!profile) continue;
+
+        const { error } = await supabase.from("notification").insert({
+          user_id: riderId,
+          recipient_id: profile.id,
+          recipient_token: profile.expo_push_token,
+          title: "A new ride request",
+          body: `From: ${origin.address}\nTo: ${destination.address}\nOn: ${formattedDate} at ${formattedTime}`,
+          type: "ride_requested",
+          trip_id: tripId,
+        });
+
+        if (error) throw error;
+      }
       break;
     }
 

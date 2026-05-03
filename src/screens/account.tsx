@@ -142,10 +142,6 @@ export default function AccountScreen() {
         if (signedUrlError) throw signedUrlError;
       }
 
-      if (data.driver_verification) {
-        setDriverVerification(data.driver_verification.status);
-      }
-
       if (data.vehicle) {
         setVehicleId(data.vehicle.id);
         setValue("vehicleReg", data.vehicle.reg ?? "");
@@ -155,11 +151,23 @@ export default function AccountScreen() {
         );
       }
 
+      // if signed-in user is a driver, retrieve driver verification status
+      if (isDriver) {
+        const { data, error } = await supabase
+          .from("driver_verification")
+          .select("*")
+          .eq("driver_id", user.id)
+          .single();
+
+        if (data) setDriverVerification(data.status);
+        if (error) throw error;
+      }
+
       profileLoaded.current = true;
     } catch (error) {
       if (error instanceof Error) Alert.alert(error.message);
     }
-  }, [user, setValue]);
+  }, [user, setValue, isDriver]);
 
   useEffect(() => {
     loadProfile();
