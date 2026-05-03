@@ -37,7 +37,6 @@ export default async function updateProfile(
     vehicleReg,
     vehicleTransmission,
     resetPassword,
-    driverVerification,
   } = updatedProfile;
 
   // update name, email and password in Supabase Auth
@@ -92,9 +91,7 @@ export default async function updateProfile(
     ...(profilePhotoPath && { profile_photo: profilePhotoPath }),
     ...(drivingLicencePath && {
       driving_licence: drivingLicencePath,
-      driver_verification: false,
     }),
-    ...(driverVerification && { driver_verification: driverVerification }),
     ...(newVehicleId !== vehicleId && { vehicle_id: newVehicleId }),
   };
 

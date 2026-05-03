@@ -10,7 +10,7 @@ import createNotification from "@/api/notifications/create-notification";
 import createRating from "@/api/ratings/create-rating";
 import fetchRating from "@/api/ratings/fetch-rating";
 import cancelTrip from "@/api/trips/cancel-trip";
-import { Coords } from "@/api/trips/create-trip";
+import createTrip, { Coords } from "@/api/trips/create-trip";
 import updateTrip from "@/api/trips/update-trip";
 import Map from "@/components/map/map";
 import BaseModal from "@/components/ui/base-modal";
@@ -274,7 +274,7 @@ export default function TripDetails() {
 
   /**
    * Handles the trip cancel button by a driver:
-   * Updates the trip table, creates a new row by running security definer function,
+   * Updates the current row and creates a new row in the trip table,
    * and create a new entry in notification table to send notification to other drivers.
    */
   async function handleDriverCancel() {
@@ -288,32 +288,30 @@ export default function TripDetails() {
     )
       return;
 
-    const { data, error } = await supabase.rpc("driver_cancel_and_rebook", {
-      cancelled_trip_id: id,
-      start_location: origin,
-      end_location: destination,
-      start_time: dateTime.toISOString(),
-    });
+    const updatedData = await updateTrip(id, "driver_cancelled", driverId);
 
-    if (error) {
+    if (!updatedData) {
       Alert.alert("Something went wrong", "Please try again.");
       return;
     }
 
-    const newTripId = data.new_trip_id;
-
-    // send notifications to other drivers
-    await createNotification({
-      riderId: riderId,
-      origin: origin,
-      destination: destination,
-      dateTime: dateTime,
-      notificationType: "pending",
-      tripId: newTripId,
-      fare: fare,
+    // create a new entry in the trip table
+    const data = await createTrip({
+      riderId,
+      origin,
+      destination,
+      dateTime,
+      fare,
     });
 
-    // send a notification to the rider
+    if (!data) {
+      Alert.alert("Something went wrong", "Please try again.");
+      return;
+    }
+
+    const newTripId = data.id;
+
+    // send a notification to the rider and other drivers
     await createNotification({
       riderId: riderId,
       driverId: driverId,

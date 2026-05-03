@@ -29,7 +29,7 @@ const TripContext = createContext<TripContextType | undefined>(undefined);
 export function useTrip() {
   const value = useContext(TripContext);
   if (!value) {
-    throw new Error("useFare must be wrapped in a <TripProvider />");
+    throw new Error("useTrip must be wrapped in a <TripProvider />");
   }
   return value;
 }
