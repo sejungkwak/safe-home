@@ -47,20 +47,11 @@ export default function UserInfoModal({
           gap: 12,
         }}
       >
-        {profilePhotoUrl ? (
+        {profilePhotoUrl && (
           <Image
             source={{ uri: profilePhotoUrl }}
             style={{ width: 80, height: 80, borderRadius: 40 }}
           />
-        ) : (
-          <View
-            className="w-80 h-80 shrink-0 grow-0 rounded-full border-2 justify-center items-center"
-            style={{
-              borderColor: colors.onSurface,
-            }}
-          >
-            <Icon source="account" size={64} color={colors.onSurface} />
-          </View>
         )}
         <Text variant="headlineSmall">{name ?? "Unknown"}</Text>
         {phone && (
