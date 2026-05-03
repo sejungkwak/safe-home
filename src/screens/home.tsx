@@ -32,7 +32,7 @@ cssInterop(ChipButton, { className: { target: "style" } });
 export default function HomeScreen() {
   const { colors } = useTheme();
   const router = useRouter();
-  const { role } = useRole();
+  const { role, isLoading } = useRole();
   const { user } = useSession();
 
   // retrieve the user's current location and any permission or location error message
@@ -90,6 +90,8 @@ export default function HomeScreen() {
       getAddress();
     }, [user]),
   );
+
+  if (isLoading) return null;
 
   return (
     <ScreenContainer>

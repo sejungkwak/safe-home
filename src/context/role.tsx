@@ -40,6 +40,7 @@ export function RoleProvider({ children }: PropsWithChildren) {
         (event === "SIGNED_IN" || event === "INITIAL_SESSION") &&
         session
       ) {
+        setIsLoading(true);
         try {
           // retrieve the user role from database
           const profile = await fetchProfile(session.user.id);

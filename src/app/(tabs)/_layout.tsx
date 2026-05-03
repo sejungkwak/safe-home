@@ -15,7 +15,7 @@ export default function TabLayout() {
   const { colors } = useTheme();
   const colorScheme = useColorScheme();
   const { signOut } = useSession();
-  const { role } = useRole();
+  const { role, isLoading } = useRole();
 
   const isAdmin = role === "admin";
 
@@ -33,7 +33,7 @@ export default function TabLayout() {
               role === "driver"
                 ? "Ride Requests"
                 : "Pending Driver Verification",
-            headerShown: role !== "rider",
+            headerShown: !isLoading && role !== "rider",
             headerShadowVisible: false,
             headerRight: isAdmin
               ? () => <IconButton icon="logout" size={20} onPress={signOut} />
