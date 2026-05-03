@@ -10,7 +10,9 @@ type NotificationType =
   | "driver_accepted"
   | "rider_accepted"
   | "driver_cancelled"
-  | "rider_cancelled";
+  | "rider_cancelled"
+  | "rejected"
+  | "verified";
 
 type NotificationData = {
   type: NotificationType;
@@ -64,6 +66,16 @@ function onNotificationRedirect(
 
     case "rider_cancelled":
       // redirect the driver to the home screen
+      router.replace("/");
+      break;
+
+    // redirect the driver to the account screen if verification failed
+    case "rejected":
+      router.replace("/(tabs)/account");
+      break;
+
+    // redirect the driver to the home screen if verification approved
+    case "verified":
       router.replace("/");
       break;
 

@@ -2,11 +2,14 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Alert, Linking, ScrollView, View } from "react-native";
 import { Button, Card, Text, TextInput } from "react-native-paper";
 
+import fetchProfile from "@/api/profiles/fetch-profile";
+import createVerifNotification from "@/api/verif-notifications/create-verif-notification";
 import formatDate from "@/lib/format-date";
 import { supabase } from "@/lib/supabase";
 
 type DriverApplication = {
   id: string;
+  driverId: string;
   name: string;
   email: string;
   created_at: string;
@@ -20,13 +23,15 @@ type DriverApplication = {
  */
 export default function DriverApplicationList() {
   const [applications, setApplications] = useState<DriverApplication[]>([]);
-  const [text, setText] = useState("");
+  const [reason, setReason] = useState<string>("");
 
   // retrieve pending or resubmitted applications
   const getNewApplications = useCallback(async () => {
     const { data, error } = await supabase
       .from("driver_verification")
-      .select("id, created_at, driver_id(name, email, driving_licence)")
+      .select(
+        "id, created_at, driver_id, profile:driver_id(name, email, driving_licence)",
+      )
       .in("status", ["pending", "resubmitted"]);
 
     if (error) throw error;
@@ -38,7 +43,7 @@ export default function DriverApplicationList() {
 
     const applicationArray = await Promise.all(
       data.map(async (row) => {
-        const profile = row.driver_id as any;
+        const profile = row.profile as any;
         let licenceUrl: string | null = null;
 
         if (profile.driving_licence) {
@@ -51,8 +56,12 @@ export default function DriverApplicationList() {
         const { formattedDate, formattedTime } = formatDate(
           new Date(row.created_at),
         );
+
+        setReason("");
+
         return {
           id: row.id,
+          driverId: row.driver_id,
           name: profile.name,
           email: profile.email,
           created_at: `${formattedDate} ${formattedTime}`,
@@ -91,20 +100,32 @@ export default function DriverApplicationList() {
 
   // handle Reject button press
   // update reason and status columns on driver_verification table
-  async function handleReject(id: string) {
-    if (text === "" || !text) {
+  async function handleReject(id: string, driverId: string) {
+    if (reason === "" || !reason) {
       return Alert.alert("Please enter a reason for rejection.");
     }
 
     const { error } = await supabase
       .from("driver_verification")
       .update({
-        rejection_reason: text,
+        rejection_reason: reason,
         status: "rejected",
         reviewed_at: new Date().toISOString(),
       })
       .eq("id", id);
     if (error) throw error;
+
+    // prepare notification data for sending to the driver
+    const profile = await fetchProfile(driverId);
+    if (profile.expo_push_token) {
+      createVerifNotification({
+        driverId,
+        pushToken: profile.expo_push_token,
+        notificationType: "rejected",
+        reason: reason,
+      });
+    }
+
     setApplications(
       applications.filter((application) => application.id !== id),
     );
@@ -112,15 +133,29 @@ export default function DriverApplicationList() {
 
   // handle Verify button press
   // update status on driver_verification table
-  async function handleVerify(id: string) {
+  async function handleVerify(id: string, driverId: string) {
     const { error } = await supabase
       .from("driver_verification")
-      .update({ status: "verified", reviewed_at: new Date().toISOString() })
+      .update({
+        status: "verified",
+        rejection_reason: "",
+        reviewed_at: new Date().toISOString(),
+      })
       .eq("id", id);
     if (error) throw error;
     setApplications(
       applications.filter((application) => application.id !== id),
     );
+
+    // prepare notification data for sending to the driver
+    const profile = await fetchProfile(driverId);
+    if (profile.expo_push_token) {
+      createVerifNotification({
+        driverId,
+        pushToken: profile.expo_push_token,
+        notificationType: "verified",
+      });
+    }
   }
 
   if (applications.length === 0) {
@@ -156,21 +191,21 @@ export default function DriverApplicationList() {
             <TextInput
               mode="outlined"
               placeholder="Reason for rejection"
-              value={text}
-              onChangeText={(text) => setText(text)}
+              value={reason}
+              onChangeText={(text) => setReason(text)}
             />
           </Card.Content>
           <Card.Actions>
             <Button
               onPress={() => {
-                handleReject(driver.id);
+                handleReject(driver.id, driver.driverId);
               }}
             >
               Reject
             </Button>
             <Button
               onPress={() => {
-                handleVerify(driver.id);
+                handleVerify(driver.id, driver.driverId);
               }}
             >
               Verify
