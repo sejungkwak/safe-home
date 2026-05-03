@@ -25,13 +25,6 @@ CREATE EXTENSION IF NOT EXISTS "pg_net" WITH SCHEMA "extensions";
 ALTER SCHEMA "public" OWNER TO "postgres";
 
 
-CREATE EXTENSION IF NOT EXISTS "pg_graphql" WITH SCHEMA "graphql";
-
-
-
-
-
-
 CREATE EXTENSION IF NOT EXISTS "pg_stat_statements" WITH SCHEMA "extensions";
 
 
@@ -60,16 +53,37 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA "extensions";
 
 
 
+CREATE TYPE "public"."driver_verification_status" AS ENUM (
+    'pending',
+    'rejected',
+    'resubmitted',
+    'verified'
+);
+
+
+ALTER TYPE "public"."driver_verification_status" OWNER TO "postgres";
+
+
 CREATE TYPE "public"."notification_type" AS ENUM (
     'ride_requested',
     'driver_accepted',
     'rider_accepted',
     'driver_cancelled',
-    'rider_cancelled'
+    'rider_cancelled',
+    'expired'
 );
 
 
 ALTER TYPE "public"."notification_type" OWNER TO "postgres";
+
+
+CREATE TYPE "public"."transmission_type" AS ENUM (
+    'manual',
+    'automatic'
+);
+
+
+ALTER TYPE "public"."transmission_type" OWNER TO "postgres";
 
 
 CREATE TYPE "public"."trip_status" AS ENUM (
@@ -79,7 +93,8 @@ CREATE TYPE "public"."trip_status" AS ENUM (
     'in_progress',
     'completed',
     'driver_cancelled',
-    'rider_cancelled'
+    'rider_cancelled',
+    'expired'
 );
 
 
@@ -101,22 +116,27 @@ CREATE OR REPLACE FUNCTION "public"."handle_new_user"() RETURNS "trigger"
     SET "search_path" TO ''
     AS $$
 declare
-  selected_role text;
-  user_roles public.user_role[];
+  raw_role text;
+  selected_role public.user_role;
 begin
-  selected_role := new.raw_user_meta_data ->> 'role';
-  if selected_role = 'both' 
-    then
-      user_roles := array['rider', 'driver']::public.user_role[];
-    elsif 
-      selected_role is null or selected_role = '' 
-    then
-      user_roles := array['rider']::public.user_role[];
-    else
-      user_roles := array[selected_role]::public.user_role[];
-    end if;
+  raw_role := new.raw_user_meta_data ->> 'role';
+  if lower(new.email) = 'safehome.admin@gmail.com'
+    then selected_role := 'admin';
+  elsif raw_role = 'driver'
+    then selected_role := 'driver';
+  else
+    selected_role := 'rider';
+  end if;
   insert into public.profile (id, name, phone, email, role, driving_licence, profile_photo)
-  values (new.id, new.raw_user_meta_data ->> 'name', new.raw_user_meta_data ->> 'phone', new.email, user_roles, new.raw_user_meta_data ->> 'driving_licence', new.raw_user_meta_data ->> 'profile_photo');
+  values (
+    new.id,
+    new.raw_user_meta_data ->> 'name',
+    new.raw_user_meta_data ->> 'phone',
+    new.email,
+    selected_role,
+    new.raw_user_meta_data ->> 'driving_licence',
+    new.raw_user_meta_data ->> 'profile_photo'
+  );
   return new;
 end;
 $$;
@@ -129,16 +149,30 @@ SET default_tablespace = '';
 SET default_table_access_method = "heap";
 
 
+CREATE TABLE IF NOT EXISTS "public"."driver_verification" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "driver_id" "uuid" NOT NULL,
+    "status" "public"."driver_verification_status" DEFAULT 'pending'::"public"."driver_verification_status" NOT NULL,
+    "rejection_reason" "text",
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "reviewed_at" timestamp with time zone
+);
+
+
+ALTER TABLE "public"."driver_verification" OWNER TO "postgres";
+
+
 CREATE TABLE IF NOT EXISTS "public"."notification" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "user_id" "uuid" NOT NULL,
+    "recipient_id" "uuid" NOT NULL,
+    "recipient_token" "text" NOT NULL,
     "title" "text" NOT NULL,
     "body" "text" NOT NULL,
     "type" "public"."notification_type" DEFAULT 'ride_requested'::"public"."notification_type" NOT NULL,
     "trip_id" "uuid",
-    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "recipient_id" "uuid" NOT NULL,
-    "recipient_token" "text" NOT NULL
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL
 );
 
 
@@ -150,8 +184,8 @@ CREATE TABLE IF NOT EXISTS "public"."profile" (
     "name" "text",
     "phone" "text",
     "email" "text" NOT NULL,
-    "address" "text",
-    "role" "public"."user_role"[] DEFAULT ARRAY['rider'::"public"."user_role"] NOT NULL,
+    "address" "jsonb",
+    "role" "public"."user_role" DEFAULT 'rider'::"public"."user_role" NOT NULL,
     "driving_licence" "text",
     "profile_photo" "text",
     "vehicle_id" "uuid",
@@ -170,7 +204,7 @@ CREATE TABLE IF NOT EXISTS "public"."rating" (
     "trip_id" "uuid" NOT NULL,
     "rating" smallint NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    CONSTRAINT "rating_rating_check" CHECK ((("rating" >= 1) AND ("rating" <= 5)))
+    CONSTRAINT "rating_rating_check" CHECK ((("rating" >= 0) AND ("rating" <= 5)))
 );
 
 
@@ -181,8 +215,8 @@ CREATE TABLE IF NOT EXISTS "public"."trip" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "rider_id" "uuid",
     "driver_id" "uuid",
-    "start_location" "text" NOT NULL,
-    "end_location" "text" NOT NULL,
+    "start_location" "jsonb" NOT NULL,
+    "end_location" "jsonb" NOT NULL,
     "start_time" timestamp with time zone,
     "end_time" timestamp with time zone,
     "fare" numeric NOT NULL,
@@ -199,11 +233,33 @@ CREATE TABLE IF NOT EXISTS "public"."vehicle" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "make" "text",
     "colour" "text",
-    "reg" "text" NOT NULL
+    "reg" "text" NOT NULL,
+    "transmission_type" "public"."transmission_type" DEFAULT 'manual'::"public"."transmission_type" NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"(),
+    "updated_at" timestamp with time zone DEFAULT "now"()
 );
 
 
 ALTER TABLE "public"."vehicle" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."verif_notification" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "driver_id" "uuid" NOT NULL,
+    "driver_token" "text" NOT NULL,
+    "title" "text" NOT NULL,
+    "body" "text" NOT NULL,
+    "type" "public"."driver_verification_status" DEFAULT 'pending'::"public"."driver_verification_status" NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+
+ALTER TABLE "public"."verif_notification" OWNER TO "postgres";
+
+
+ALTER TABLE ONLY "public"."driver_verification"
+    ADD CONSTRAINT "driver_verification_pkey" PRIMARY KEY ("id");
+
 
 
 ALTER TABLE ONLY "public"."notification"
@@ -213,11 +269,6 @@ ALTER TABLE ONLY "public"."notification"
 
 ALTER TABLE ONLY "public"."profile"
     ADD CONSTRAINT "profile_email_key" UNIQUE ("email");
-
-
-
-ALTER TABLE ONLY "public"."profile"
-    ADD CONSTRAINT "profile_expo_push_token_key" UNIQUE ("expo_push_token");
 
 
 
@@ -251,7 +302,21 @@ ALTER TABLE ONLY "public"."vehicle"
 
 
 
-CREATE OR REPLACE TRIGGER "push_notification_webhook" AFTER INSERT ON "public"."notification" FOR EACH ROW EXECUTE FUNCTION "supabase_functions"."http_request"('https://sfmbywgpekmrowibypsz.supabase.co/functions/v1/notification', 'POST', '{"Content-type":"application/json","Authorization":"Bearer ***REMOVED***"}', '{}', '1000');
+ALTER TABLE ONLY "public"."verif_notification"
+    ADD CONSTRAINT "verif_notification_pkey" PRIMARY KEY ("id");
+
+
+
+CREATE OR REPLACE TRIGGER "notification" AFTER INSERT ON "public"."notification" FOR EACH ROW EXECUTE FUNCTION "supabase_functions"."http_request"('https://sfmbywgpekmrowibypsz.supabase.co/functions/v1/notification', 'POST', '{"Content-type":"application/json","Authorization":"Bearer ***REMOVED***"}', '{}', '5000');
+
+
+
+CREATE OR REPLACE TRIGGER "verif-notification" AFTER INSERT ON "public"."verif_notification" FOR EACH ROW EXECUTE FUNCTION "supabase_functions"."http_request"('https://sfmbywgpekmrowibypsz.supabase.co/functions/v1/verif-notification', 'POST', '{"Content-type":"application/json","Authorization":"Bearer ***REMOVED***"}', '{}', '5000');
+
+
+
+ALTER TABLE ONLY "public"."driver_verification"
+    ADD CONSTRAINT "driver_verification_driver_id_fkey" FOREIGN KEY ("driver_id") REFERENCES "public"."profile"("id") ON DELETE CASCADE;
 
 
 
@@ -300,74 +365,124 @@ ALTER TABLE ONLY "public"."trip"
 
 
 
-CREATE POLICY "Authenticated users can view all ratings" ON "public"."rating" FOR SELECT TO "authenticated" USING (true);
+ALTER TABLE ONLY "public"."verif_notification"
+    ADD CONSTRAINT "verif_notification_driver_id_fkey" FOREIGN KEY ("driver_id") REFERENCES "auth"."users"("id") ON DELETE CASCADE;
 
 
 
-CREATE POLICY "Authenticated users can view basic profiles" ON "public"."profile" FOR SELECT TO "authenticated" USING (true);
+CREATE POLICY "Anon, authenticated users can delete" ON "public"."driver_verification" FOR DELETE TO "authenticated", "anon" USING (true);
 
 
 
-CREATE POLICY "Users can delete their own profile" ON "public"."profile" FOR DELETE USING (("auth"."uid"() = "id"));
+CREATE POLICY "Anon, authenticated users can delete" ON "public"."notification" FOR DELETE TO "authenticated", "anon" USING (true);
 
 
 
-CREATE POLICY "Users can delete their own vehicle" ON "public"."vehicle" FOR DELETE USING (("id" IN ( SELECT "profile"."vehicle_id"
-   FROM "public"."profile"
-  WHERE ("auth"."uid"() = "profile"."id"))));
+CREATE POLICY "Anon, authenticated users can delete" ON "public"."profile" FOR DELETE TO "authenticated", "anon" USING (true);
 
 
 
-CREATE POLICY "Users can insert ratings for their own trips" ON "public"."rating" FOR INSERT TO "authenticated" WITH CHECK (((( SELECT "auth"."uid"() AS "uid") = "user_id") AND (EXISTS ( SELECT 1
-   FROM "public"."trip"
-  WHERE (("trip"."id" = "rating"."trip_id") AND (("trip"."rider_id" = ( SELECT "auth"."uid"() AS "uid")) OR ("trip"."driver_id" = ( SELECT "auth"."uid"() AS "uid"))))))));
+CREATE POLICY "Anon, authenticated users can delete" ON "public"."rating" FOR DELETE TO "authenticated", "anon" USING (true);
 
 
 
-CREATE POLICY "Users can insert their own notification" ON "public"."notification" FOR INSERT WITH CHECK (("auth"."uid"() = "user_id"));
+CREATE POLICY "Anon, authenticated users can delete" ON "public"."trip" FOR DELETE TO "authenticated", "anon" USING (true);
 
 
 
-CREATE POLICY "Users can insert their own profile" ON "public"."profile" FOR INSERT WITH CHECK (("auth"."uid"() = "id"));
+CREATE POLICY "Anon, authenticated users can delete" ON "public"."vehicle" FOR DELETE TO "authenticated", "anon" USING (true);
 
 
 
-CREATE POLICY "Users can insert their own trip" ON "public"."trip" FOR INSERT WITH CHECK (("auth"."uid"() = "rider_id"));
+CREATE POLICY "Anon, authenticated users can delete" ON "public"."verif_notification" FOR DELETE TO "authenticated", "anon" USING (true);
 
 
 
-CREATE POLICY "Users can insert their own vehicle" ON "public"."vehicle" FOR INSERT WITH CHECK (("auth"."uid"() = "id"));
+CREATE POLICY "Anon, authenticated users can insert" ON "public"."driver_verification" FOR INSERT TO "authenticated", "anon" WITH CHECK (true);
 
 
 
-CREATE POLICY "Users can update their own profile" ON "public"."profile" FOR UPDATE USING (("auth"."uid"() = "id"));
+CREATE POLICY "Anon, authenticated users can insert" ON "public"."notification" FOR INSERT TO "authenticated", "anon" WITH CHECK (true);
 
 
 
-CREATE POLICY "Users can update their own trip" ON "public"."trip" FOR UPDATE USING ((("auth"."uid"() = "rider_id") OR ("auth"."uid"() = "driver_id")));
+CREATE POLICY "Anon, authenticated users can insert" ON "public"."profile" FOR INSERT TO "authenticated", "anon" WITH CHECK (true);
 
 
 
-CREATE POLICY "Users can update their own vehicle" ON "public"."vehicle" FOR UPDATE USING (("id" IN ( SELECT "profile"."vehicle_id"
-   FROM "public"."profile"
-  WHERE ("auth"."uid"() = "profile"."id"))));
+CREATE POLICY "Anon, authenticated users can insert" ON "public"."rating" FOR INSERT TO "authenticated", "anon" WITH CHECK (true);
 
 
 
-CREATE POLICY "Users can view their own notification" ON "public"."notification" FOR SELECT TO "authenticated" USING ((("auth"."uid"() = "user_id") OR ("auth"."uid"() = "recipient_id")));
+CREATE POLICY "Anon, authenticated users can insert" ON "public"."trip" FOR INSERT TO "authenticated", "anon" WITH CHECK (true);
 
 
 
-CREATE POLICY "Users can view their own profile" ON "public"."profile" FOR SELECT USING (("auth"."uid"() = "id"));
+CREATE POLICY "Anon, authenticated users can insert" ON "public"."vehicle" FOR INSERT TO "authenticated", "anon" WITH CHECK (true);
 
 
 
-CREATE POLICY "Users can view their own trip" ON "public"."trip" FOR SELECT USING ((("auth"."uid"() = "rider_id") OR ("auth"."uid"() = "driver_id")));
+CREATE POLICY "Anon, authenticated users can insert" ON "public"."verif_notification" FOR INSERT TO "authenticated", "anon" WITH CHECK (true);
 
 
 
-CREATE POLICY "Vehicle information is visible to everyone." ON "public"."vehicle" FOR SELECT TO "authenticated" USING (true);
+CREATE POLICY "Anon, authenticated users can read" ON "public"."driver_verification" FOR SELECT TO "authenticated", "anon" USING (true);
 
+
+
+CREATE POLICY "Anon, authenticated users can read" ON "public"."notification" FOR SELECT TO "authenticated", "anon" USING (true);
+
+
+
+CREATE POLICY "Anon, authenticated users can read" ON "public"."profile" FOR SELECT TO "authenticated", "anon" USING (true);
+
+
+
+CREATE POLICY "Anon, authenticated users can read" ON "public"."rating" FOR SELECT TO "authenticated", "anon" USING (true);
+
+
+
+CREATE POLICY "Anon, authenticated users can read" ON "public"."trip" FOR SELECT TO "authenticated", "anon" USING (true);
+
+
+
+CREATE POLICY "Anon, authenticated users can read" ON "public"."vehicle" FOR SELECT TO "authenticated", "anon" USING (true);
+
+
+
+CREATE POLICY "Anon, authenticated users can read" ON "public"."verif_notification" FOR SELECT TO "authenticated", "anon" USING (true);
+
+
+
+CREATE POLICY "Anon, authenticated users can update" ON "public"."driver_verification" FOR UPDATE TO "authenticated", "anon" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "Anon, authenticated users can update" ON "public"."notification" FOR UPDATE TO "authenticated", "anon" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "Anon, authenticated users can update" ON "public"."profile" FOR UPDATE TO "authenticated", "anon" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "Anon, authenticated users can update" ON "public"."rating" FOR UPDATE TO "authenticated", "anon" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "Anon, authenticated users can update" ON "public"."trip" FOR UPDATE TO "authenticated", "anon" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "Anon, authenticated users can update" ON "public"."vehicle" FOR UPDATE TO "authenticated", "anon" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "Anon, authenticated users can update" ON "public"."verif_notification" FOR UPDATE TO "authenticated", "anon" USING (true) WITH CHECK (true);
+
+
+
+ALTER TABLE "public"."driver_verification" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."notification" ENABLE ROW LEVEL SECURITY;
@@ -385,6 +500,9 @@ ALTER TABLE "public"."trip" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "public"."vehicle" ENABLE ROW LEVEL SECURITY;
 
 
+ALTER TABLE "public"."verif_notification" ENABLE ROW LEVEL SECURITY;
+
+
 
 
 ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
@@ -393,8 +511,21 @@ ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
 
 
 
+
+ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."driver_verification";
+
+
+
+ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."trip";
+
+
+
+
+
+
 REVOKE USAGE ON SCHEMA "public" FROM PUBLIC;
 GRANT USAGE ON SCHEMA "public" TO "authenticated";
+GRANT USAGE ON SCHEMA "public" TO "anon";
 
 
 
@@ -560,46 +691,38 @@ GRANT USAGE ON SCHEMA "public" TO "authenticated";
 
 
 
+GRANT ALL ON TABLE "public"."driver_verification" TO "authenticated";
+GRANT ALL ON TABLE "public"."driver_verification" TO "anon";
 
 
 
 GRANT ALL ON TABLE "public"."notification" TO "authenticated";
+GRANT ALL ON TABLE "public"."notification" TO "anon";
 
 
 
 GRANT ALL ON TABLE "public"."profile" TO "authenticated";
-
-
-
-GRANT SELECT("id") ON TABLE "public"."profile" TO "authenticated";
-
-
-
-GRANT SELECT("name") ON TABLE "public"."profile" TO "authenticated";
-
-
-
-GRANT SELECT("role") ON TABLE "public"."profile" TO "authenticated";
-
-
-
-GRANT SELECT("profile_photo") ON TABLE "public"."profile" TO "authenticated";
-
-
-
-GRANT SELECT("expo_push_token"),UPDATE("expo_push_token") ON TABLE "public"."profile" TO "authenticated";
+GRANT ALL ON TABLE "public"."profile" TO "anon";
 
 
 
 GRANT ALL ON TABLE "public"."rating" TO "authenticated";
+GRANT ALL ON TABLE "public"."rating" TO "anon";
 
 
 
 GRANT ALL ON TABLE "public"."trip" TO "authenticated";
+GRANT ALL ON TABLE "public"."trip" TO "anon";
 
 
 
 GRANT ALL ON TABLE "public"."vehicle" TO "authenticated";
+GRANT ALL ON TABLE "public"."vehicle" TO "anon";
+
+
+
+GRANT ALL ON TABLE "public"."verif_notification" TO "anon";
+GRANT ALL ON TABLE "public"."verif_notification" TO "authenticated";
 
 
 
@@ -609,10 +732,12 @@ GRANT ALL ON TABLE "public"."vehicle" TO "authenticated";
 
 
 
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES TO "anon";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES TO "authenticated";
 
 
 
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "anon";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "authenticated";
 
 

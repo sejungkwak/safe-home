@@ -76,6 +76,9 @@ export default function AccountScreen() {
   const [driverVerification, setDriverVerification] = useState<string | null>(
     null,
   );
+  const [driverRejectReason, setDriverRejectReason] = useState<string | null>(
+    null,
+  );
   const profileLoaded = useRef(false);
   const vehicleRef = useRef<TextInput | null>(null);
 
@@ -159,7 +162,10 @@ export default function AccountScreen() {
           .eq("driver_id", user.id)
           .single();
 
-        if (data) setDriverVerification(data.status);
+        if (data) {
+          setDriverVerification(data.status);
+          setDriverRejectReason(data.rejection_reason);
+        }
         if (error) throw error;
       }
 
@@ -251,7 +257,7 @@ export default function AccountScreen() {
         if (newLicencePhoto) {
           const { error: verificationUpdateError } = await supabase
             .from("driver_verification")
-            .update({ status: "resubmitted" })
+            .update({ status: "resubmitted", rejection_reason: "" })
             .eq("driver_id", user.id);
           if (verificationUpdateError) throw verificationUpdateError;
         }
@@ -603,6 +609,11 @@ export default function AccountScreen() {
                       : "Verification pending"}
                 </Text>
               </View>
+              {driverRejectReason !== "" && (
+                <Text variant="bodyMedium" style={{ color: colors.error }}>
+                  Reason: {driverRejectReason}
+                </Text>
+              )}
             </View>
           </>
         )}
