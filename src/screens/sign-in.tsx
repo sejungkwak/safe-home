@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Image } from "expo-image";
 import { Link } from "expo-router";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -42,6 +43,13 @@ function SigninScreen() {
   return (
     <ScreenContainer>
       <ScrollView>
+        <View className="flex items-center my-4">
+          <Image
+            source={require("./../assets/images/icons/icon.png")}
+            style={{ width: 180, height: 100, borderRadius: 10 }}
+          />
+        </View>
+
         <View className="mb-4">
           <View>
             <Controller
