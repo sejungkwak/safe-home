@@ -3,7 +3,7 @@ import { z } from "zod";
 // Define a Zod Schema for the sign up form
 export const signinSchema = z.object({
   email: z.email({
-    message: "The email you entered is invalid.",
+    message: "Invalid email address.",
   }),
   password: z.string().min(1, {
     message: "Password is required.",

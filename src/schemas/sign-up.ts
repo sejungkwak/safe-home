@@ -14,9 +14,9 @@ export const signupSchema = z
       .max(30, {
         message: "Name must be at most 30 characters.",
       }),
-    phone: z.string().min(8),
+    phone: z.string().min(8, { message: "Invalid mobile number." }),
     email: z.email({
-      message: "The email you entered is invalid.",
+      message: "Invalid email address.",
     }),
     password: z.string().min(6, {
       message: "Password must be at least 6 characters.",
