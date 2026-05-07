@@ -8,8 +8,8 @@ import { useState } from "react";
 import { View } from "react-native";
 import { HelperText } from "react-native-paper";
 
+import GoogleSignInButton from "@/components/auth/google-sign-in-button";
 import { supabase } from "@/lib/supabase";
-import GoogleSignInButton from "./google-sign-in-button";
 
 /**
  * Handles Google authentication using Supabase Auth and the

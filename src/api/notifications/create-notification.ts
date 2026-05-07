@@ -1,6 +1,6 @@
+import { TripParams } from "@/api/trips/create-trip";
 import formatDate from "@/lib/format-date";
-import { supabase } from "../../lib/supabase";
-import { TripParams } from "../trips/create-trip";
+import { supabase } from "@/lib/supabase";
 
 /**
  * Handles a ride request or booking confirmation button press.

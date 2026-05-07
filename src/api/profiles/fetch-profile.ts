@@ -1,4 +1,4 @@
-import { supabase } from "../../lib/supabase";
+import { supabase } from "@/lib/supabase";
 
 /**
  * Retrieves profile data including vehicle and driver_verification details.

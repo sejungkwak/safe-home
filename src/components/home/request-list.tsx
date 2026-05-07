@@ -4,8 +4,8 @@ import { Pressable, ScrollView } from "react-native";
 import { Text } from "react-native-paper";
 
 import { Coords } from "@/api/trips/create-trip";
+import TripCard from "@/components/ui/trip-card";
 import { supabase } from "@/lib/supabase";
-import TripCard from "../ui/trip-card";
 
 /**
  * Retrieves and displays a list of pending ride requests from database

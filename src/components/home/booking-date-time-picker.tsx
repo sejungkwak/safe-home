@@ -1,9 +1,9 @@
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useState } from "react";
 import { Button, Platform } from "react-native";
-import formatDate from "../../lib/format-date";
 
 import { useTrip } from "@/context/trip";
+import formatDate from "@/lib/format-date";
 
 type PickerMode = "date" | "time";
 

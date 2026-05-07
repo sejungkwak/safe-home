@@ -6,8 +6,8 @@ import React, {
   type PropsWithChildren,
 } from "react";
 
-import fetchProfile from "../api/profiles/fetch-profile";
-import { supabase } from "../lib/supabase";
+import fetchProfile from "@/api/profiles/fetch-profile";
+import { supabase } from "@/lib/supabase";
 
 type RoleContextType = {
   role: string | null;

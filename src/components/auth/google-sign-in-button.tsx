@@ -1,8 +1,8 @@
 import { View } from "react-native";
 import { Text } from "react-native-paper";
 
-import PrimaryButton from "../ui/primary-button";
-import GoogleIcon from "./google-icon";
+import GoogleIcon from "@/components/auth/google-icon";
+import PrimaryButton from "@/components/ui/primary-button";
 
 export default function GoogleSignInButton({
   onPress,

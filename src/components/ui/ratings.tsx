@@ -2,7 +2,8 @@ import { useState } from "react";
 import { View } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { Rating } from "react-native-ratings";
-import PrimaryButton from "./primary-button";
+
+import PrimaryButton from "@/components/ui/primary-button";
 
 /**
  * A custom rating component utilising react-native-ratings.

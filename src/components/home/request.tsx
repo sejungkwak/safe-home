@@ -6,11 +6,11 @@ import { Button, Icon, useTheme } from "react-native-paper";
 import createNotification from "@/api/notifications/create-notification";
 import fetchProfile from "@/api/profiles/fetch-profile";
 import createTrip from "@/api/trips/create-trip";
+import BaseModal from "@/components/ui/base-modal";
+import ChipButton from "@/components/ui/chip-button";
+import PrimaryButton from "@/components/ui/primary-button";
 import { useSession } from "@/context/auth";
 import { useTrip } from "@/context/trip";
-import BaseModal from "../ui/base-modal";
-import ChipButton from "../ui/chip-button";
-import PrimaryButton from "../ui/primary-button";
 
 /**
  * Handles the ride request button press:

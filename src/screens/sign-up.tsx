@@ -12,7 +12,6 @@ import {
   Text,
   useTheme,
 } from "react-native-paper";
-import { supabase } from "../lib/supabase";
 
 import uploadImage from "@/api/storage/upload-image";
 import GoogleSignIn from "@/components/auth/google-sign-in";
@@ -22,6 +21,7 @@ import PhoneField from "@/components/ui/phone-field";
 import PrimaryButton from "@/components/ui/primary-button";
 import ScreenContainer from "@/components/ui/screen-container";
 import { pickImage } from "@/lib/pick-image";
+import { supabase } from "@/lib/supabase";
 import { validatePhoneNumber } from "@/lib/validate-phone-number";
 import { signupData, signupSchema } from "@/schemas/sign-up";
 

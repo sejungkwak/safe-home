@@ -1,6 +1,6 @@
-import { supabase } from "../../lib/supabase";
-import createVehicle from "../vehicle/create-vehicle";
-import updateVehicle from "../vehicle/update-vehicle";
+import createVehicle from "@/api/vehicle/create-vehicle";
+import updateVehicle from "@/api/vehicle/update-vehicle";
+import { supabase } from "@/lib/supabase";
 
 type UpdateProfileParams = {
   userId: string;

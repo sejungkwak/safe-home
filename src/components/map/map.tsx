@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { Dimensions } from "react-native";
 import MapView, { PROVIDER_DEFAULT } from "react-native-maps";
 
-import MapDirection from "./map-direction";
-import MapMarker from "./map-marker";
+import MapDirection from "@/components/map/map-direction";
+import MapMarker from "@/components/map/map-marker";
 
 cssInterop(MapView, { className: { target: "style" } });
 
