@@ -17,7 +17,7 @@ export default function TripCard(props: { [key: string]: any }) {
           </View>
 
           <View className="flex-1 gap-2">
-            <View className="flex-1 flex-row gap-4">
+            <View className="flex-row gap-4">
               <Text variant="labelMedium">{props.pickupTime}</Text>
               <Text variant="labelMedium">{props.options}</Text>
             </View>
