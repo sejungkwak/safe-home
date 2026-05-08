@@ -1,5 +1,5 @@
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { cssInterop } from "nativewind";
 import React, { useEffect, useRef, useState } from "react";
 import { Alert, View } from "react-native";
@@ -33,6 +33,7 @@ cssInterop(ChipButton, { className: { target: "style" } });
 export default function TripDetails() {
   const { user } = useSession();
   const { colors } = useTheme();
+  const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
   // store the user and trip details in state
@@ -218,6 +219,22 @@ export default function TripDetails() {
    * and creates a new data entry for the notification table.
    */
   async function handleAccept() {
+    // check if another driver has already accepted the request
+    const { data } = await supabase
+      .from("trip")
+      .select("status")
+      .eq("id", id)
+      .single();
+
+    if (data?.status !== "pending") {
+      Alert.alert(
+        "No Longer Available",
+        "Sorry, this trip has already been accepted by another driver.",
+      );
+      router.replace("/(tabs)/home");
+      return;
+    }
+
     // update trip table
     const { error } = await supabase
       .from("trip")
