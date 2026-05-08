@@ -80,7 +80,7 @@ export default function DriverApplicationList() {
     // listen to new driver registration or licence photo updates,
     // and call getNewApplications when it happens.
     const channel = supabase
-      .channel("driver-applications")
+      .channel(`driver-applications-${Date.now() + Math.random()}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "driver_verification" },

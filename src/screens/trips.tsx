@@ -97,7 +97,7 @@ function TripsScreen() {
 
     // listen to new trip or updates, and call getTrips when it happens.
     const channel = supabase
-      .channel("driver-trips")
+      .channel(`driver-trips-${Date.now() + Math.random()}`)
       .on(
         "postgres_changes",
         {

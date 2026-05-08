@@ -76,7 +76,7 @@ export default function RequestList() {
 
     // listen to new trip or updates, and call fetchTrips when it happens.
     const channel = supabase
-      .channel("pending-trips")
+      .channel(`pending-trips-${Date.now() + Math.random()}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "trip" },
