@@ -18,6 +18,7 @@ import { useSession } from "@/context/auth";
 import { useRole } from "@/context/role";
 import { useTrip } from "@/context/trip";
 import useUserLocation from "@/hooks/use-user-location";
+import { supabase } from "@/lib/supabase";
 
 // enable NativeWind className support for third-party and custom components
 cssInterop(GestureHandlerRootView, { className: { target: "style" } });
@@ -52,6 +53,7 @@ export default function HomeScreen() {
     setRouteInfo,
   } = useTrip();
 
+  const [driverVerified, setDriverVerified] = useState(false);
   const [sheetHeight, setSheetHeight] = useState<number>(0);
   const [mapSearchKey, setMapSearchKey] = useState(0);
   const [savedReg, setSavedReg] = useState<string | null>(null);
@@ -98,6 +100,27 @@ export default function HomeScreen() {
         setSavedTransmission(transmission);
       }
       getAddress();
+    }, [user, role]),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      async function getVerifStatus() {
+        if (!user || role !== "driver") return;
+        const { data, error } = await supabase
+          .from("driver_verification")
+          .select("status")
+          .eq("driver_id", user.id)
+          .single();
+
+        if (error) throw error;
+        if (data.status === "verified") {
+          setDriverVerified(true);
+        } else {
+          setDriverVerified(false);
+        }
+      }
+      getVerifStatus();
     }, [user, role]),
   );
 
@@ -207,7 +230,7 @@ export default function HomeScreen() {
           </GestureHandlerRootView>
         </>
       )}
-      {role === "driver" && <RequestList />}
+      {role === "driver" && <RequestList verifStatus={driverVerified} />}
       {role === "admin" && <DriverApplicationList />}
     </ScreenContainer>
   );

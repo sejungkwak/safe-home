@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Pressable, ScrollView } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { Text } from "react-native-paper";
 
 import { Coords } from "@/api/trips/create-trip";
@@ -10,7 +10,7 @@ import { supabase } from "@/lib/supabase";
 /**
  * Retrieves and displays a list of pending ride requests from database
  */
-export default function RequestList() {
+export default function RequestList({ verifStatus }: { verifStatus: boolean }) {
   const router = useRouter();
   const [trips, setTrips] = useState<
     {
@@ -93,6 +93,22 @@ export default function RequestList() {
       supabase.removeChannel(channel);
     };
   }, [fetchTrips]);
+
+  // show a message if the driver account is not verified.
+  if (!verifStatus) {
+    return (
+      <View className="m-4 gap-2">
+        <Text variant="titleLarge">
+          No trip requests are available because your driver account is not
+          verified.
+        </Text>
+        <Text variant="titleLarge">
+          Please wait for verification, or upload a valid driving license for
+          verification.
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView className="mt-4">
