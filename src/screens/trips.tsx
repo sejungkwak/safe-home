@@ -3,6 +3,8 @@ import { useCallback, useEffect, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { RadioButton, Text } from "react-native-paper";
 
+import createNotification from "@/api/notifications/create-notification";
+import fetchProfile from "@/api/profiles/fetch-profile";
 import expireTrip from "@/api/trips/expire-trip";
 import fetchTrip from "@/api/trips/fetch-trip";
 import ScreenContainer from "@/components/ui/screen-container";
@@ -49,7 +51,46 @@ function TripsScreen() {
   const getTrips = useCallback(async () => {
     if (!user || !role) return;
 
-    const data = await fetchTrip(user.id, role);
+    // expire pending or accepted trips whose
+    // start_time is more than an hour ago
+    const expiredTrips = await expireTrip();
+
+    // if trips are expired, insert new entries into notification table
+    if (expiredTrips && expiredTrips.length > 0) {
+      await Promise.all(
+        expiredTrips.map(async (trip) => {
+          const riderId = trip.rider_id;
+          const origin = trip.start_location.address;
+          const destination = trip.end_location.address;
+          const dateTime = trip.start_time;
+          const notificationType = "expired";
+          const tripId = trip.id;
+          const fare = trip.fare;
+
+          const profileData = await fetchProfile(riderId);
+          const pushToken = profileData.expo_push_token;
+          if (!pushToken) return;
+          await createNotification({
+            riderId,
+            pushToken,
+            origin,
+            destination,
+            dateTime,
+            notificationType,
+            tripId,
+            fare,
+          });
+        }),
+      );
+    }
+
+    const data = await fetchTrip(`${role}_id`, user.id, false);
+
+    const validList = data.filter((row) => {
+      const startTime = new Date(row.start_time).getTime();
+      const now = Date.now();
+      return startTime >= now - 30 * 60 * 1000;
+    });
 
     function formatStartDate(startDate: string) {
       const { formattedDate, formattedTime } = formatDate(
@@ -60,7 +101,7 @@ function TripsScreen() {
 
     // start time is in the future, and not cancelled trips
     setUpcomingTrips(
-      data
+      validList
         .filter(
           (trip) =>
             trip.status === "pending" ||
@@ -73,7 +114,7 @@ function TripsScreen() {
 
     // start time is in the past, or cancelled trips
     setPastTrips(
-      data
+      validList
         .filter(
           (trip) =>
             trip.status === "completed" ||
@@ -87,7 +128,6 @@ function TripsScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      expireTrip();
       getTrips();
     }, [getTrips]),
   );

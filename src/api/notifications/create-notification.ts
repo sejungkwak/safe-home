@@ -164,6 +164,22 @@ export default async function createNotification({
       break;
     }
 
+    case "expired": {
+      const { error } = await supabase.from("notification").insert({
+        user_id: riderId,
+        recipient_id: riderId,
+        recipient_token: pushToken,
+        title: "Trip expired",
+        body: "Your trip has been inactive for 1 hour and has now expired.",
+        type: "expired",
+        trip_id: tripId,
+      });
+
+      if (error) throw error;
+
+      break;
+    }
+
     default:
       return;
   }

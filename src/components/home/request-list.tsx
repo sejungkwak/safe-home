@@ -3,8 +3,13 @@ import { useCallback, useEffect, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { Text } from "react-native-paper";
 
+import createNotification from "@/api/notifications/create-notification";
+import fetchProfile from "@/api/profiles/fetch-profile";
 import { Coords } from "@/api/trips/create-trip";
+import expireTrip from "@/api/trips/expire-trip";
+import fetchTrip from "@/api/trips/fetch-trip";
 import TripCard from "@/components/ui/trip-card";
+import formatDate from "@/lib/format-date";
 import { supabase } from "@/lib/supabase";
 
 /**
@@ -27,45 +32,65 @@ export default function RequestList({ verifStatus }: { verifStatus: boolean }) {
 
   // retrieve pending trip data
   const fetchTrips = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("trip")
-      .select(
-        "id, rider_id, start_location, end_location, start_time, fare, status",
-      )
-      .eq("status", "pending")
-      .order("start_time");
+    // expire pending or accepted trips whose
+    // start_time is more than an hour ago
+    const expiredTrips = await expireTrip();
 
-    if (error) throw error;
+    // if trips are expired, insert new entries into notification table
+    if (expiredTrips && expiredTrips.length > 0) {
+      await Promise.all(
+        expiredTrips.map(async (trip) => {
+          const riderId = trip.rider_id;
+          const origin = trip.start_location.address;
+          const destination = trip.end_location.address;
+          const dateTime = trip.start_time;
+          const notificationType = "expired";
+          const tripId = trip.id;
+          const fare = trip.fare;
+
+          const profileData = await fetchProfile(riderId);
+          const pushToken = profileData.expo_push_token;
+          if (!pushToken) return;
+          await createNotification({
+            riderId,
+            pushToken,
+            origin,
+            destination,
+            dateTime,
+            notificationType,
+            tripId,
+            fare,
+          });
+        }),
+      );
+    }
+
+    const data = await fetchTrip("status", "pending", true);
 
     if (!data || data.length === 0) {
       setTrips([]);
       return;
     }
 
-    // filter trips whose start time is within the last 30 minutes or later
-    // 30 minutes is arbitrary, but it allows recently added trip requests
-    // to remain visible, since start_time is set to the request time.
-    const validList = data.filter((row) => {
-      const startTime = new Date(row.start_time).getTime();
-      const now = Date.now();
-      return startTime >= now - 30 * 60 * 1000;
-    });
-
     setTrips(
-      validList.map((row) => {
+      data.map((row) => {
         const startTime = new Date(row.start_time).getTime();
         const now = Date.now();
 
-        const past30 = now - 30 * 60 * 1000; // 30 minutes ago
+        const past60 = now - 60 * 60 * 1000; // 60 minutes ago
         const future59 = now + 59 * 60 * 1000; // 59 minutes later
+
+        const { formattedDate, formattedTime } = formatDate(
+          new Date(startTime),
+        );
 
         return {
           ...row,
-          start_time: new Date(startTime),
-          // label trips as "ASAP" if the start time is between 30 minutes ago
+          start_time: `${formattedDate} ${formattedTime}`,
+          // label trips as "ASAP" if the start time is between 60 minutes ago
           // and 59 minutes from now, label "Later" otherwise.
           leftText:
-            startTime >= past30 && startTime <= future59 ? "ASAP" : "Later",
+            startTime >= past60 && startTime <= future59 ? "ASAP" : "Later",
         };
       }),
     );

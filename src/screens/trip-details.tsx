@@ -12,6 +12,7 @@ import createRating from "@/api/ratings/create-rating";
 import fetchRating from "@/api/ratings/fetch-rating";
 import cancelTrip from "@/api/trips/cancel-trip";
 import createTrip, { Coords } from "@/api/trips/create-trip";
+import fetchTrip from "@/api/trips/fetch-trip";
 import updateTrip from "@/api/trips/update-trip";
 import Map from "@/components/map/map";
 import BaseModal from "@/components/ui/base-modal";
@@ -88,17 +89,14 @@ export default function TripDetails() {
       if (!id) return;
 
       // retrieve the trip information based on the id
-      const { data, error } = await supabase
-        .from("trip")
-        .select("*")
-        .eq("id", id)
-        .single();
+      const data = await fetchTrip("id", id, true);
 
-      if (error) throw error;
-      if (!data) return;
+      if (!data || data.length === 0) return;
+
+      const tripData = data[0];
 
       // get rider name and vehicle information
-      const riderData = await fetchProfile(data.rider_id);
+      const riderData = await fetchProfile(tripData.rider_id);
 
       if (!riderData) return;
 
@@ -126,10 +124,10 @@ export default function TripDetails() {
       // get driver name
       // driver field is empty when the status is pending or expired
       if (
-        data.driver_id &&
-        (data.status !== "pending" || data.status !== "expired")
+        tripData.driver_id &&
+        (tripData.status !== "pending" || tripData.status !== "expired")
       ) {
-        const driverData = await fetchProfile(data.driver_id);
+        const driverData = await fetchProfile(tripData.driver_id);
         if (driverData && isMounted) {
           setDriverId(driverData.id);
           setDriverName(driverData.name);
@@ -160,7 +158,7 @@ export default function TripDetails() {
       }
 
       if (isMounted) {
-        const start_time = new Date(data.start_time);
+        const start_time = new Date(tripData.start_time);
         const { formattedDate, formattedTime } = formatDate(start_time);
         const stringifiedTime = formattedDate + "  " + formattedTime;
 
@@ -173,12 +171,12 @@ export default function TripDetails() {
           riderData.vehicle?.transmission_type.charAt(0).toUpperCase() +
             riderData.vehicle?.transmission_type.slice(1),
         );
-        setOrigin(data.start_location);
-        setDestination(data.end_location);
+        setOrigin(tripData.start_location);
+        setDestination(tripData.end_location);
         setPickupTime(stringifiedTime);
         setDateTime(start_time);
-        setFare(data.fare);
-        setStatus(data.status);
+        setFare(tripData.fare);
+        setStatus(tripData.status);
       }
     }
 
@@ -220,13 +218,13 @@ export default function TripDetails() {
    */
   async function handleAccept() {
     // check if another driver has already accepted the request
-    const { data } = await supabase
-      .from("trip")
-      .select("status")
-      .eq("id", id)
-      .single();
+    const data = await fetchTrip("id", id, true);
 
-    if (data?.status !== "pending") {
+    if (!data || data.length === 0) return;
+
+    const tripData = data[0];
+
+    if (tripData.status !== "pending") {
       Alert.alert(
         "No Longer Available",
         "Sorry, this trip has already been accepted by another driver.",

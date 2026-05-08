@@ -1,32 +1,25 @@
 import { supabase } from "@/lib/supabase";
 
 /**
- * Retrieves trip data based on the user role.
+ * Retrieves trip data based on the passed column and value.
  *
- * @param id The signed-in user id
- * @param role The user role, rider or driver
+ * @param column The column to filter on
+ * @param value The value to filter with
+ * @param ascending The order of the query result by start_time
  * @returns An array containing the retrieved trip data
  */
-export default async function fetchTrip(id: string, role: string) {
-  if (role === "rider") {
-    const { data, error } = await supabase
-      .from("trip")
-      .select("*")
-      .eq("rider_id", id)
-      .order("start_time", { ascending: false });
+export default async function fetchTrip(
+  column: string,
+  value: string,
+  ascending: boolean,
+) {
+  const { data, error } = await supabase
+    .from("trip")
+    .select("*")
+    .eq(column, value)
+    .order("start_time", { ascending: ascending });
 
-    if (error) throw error;
+  if (error) throw error;
 
-    return data;
-  } else {
-    const { data, error } = await supabase
-      .from("trip")
-      .select("*")
-      .eq("driver_id", id)
-      .order("start_time", { ascending: false });
-
-    if (error) throw error;
-
-    return data;
-  }
+  return data;
 }
