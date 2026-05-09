@@ -146,9 +146,7 @@ export default function Request({
       <View className="mb-4">
         <ChipButton icon="wallet-outline">€{fare} (Cash)</ChipButton>
       </View>
-      <PrimaryButton disabled={!reg} onPress={onSubmit}>
-        Request
-      </PrimaryButton>
+      {reg && <PrimaryButton onPress={onSubmit}>Request</PrimaryButton>}
     </View>
   );
 }
