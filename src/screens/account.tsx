@@ -609,7 +609,7 @@ export default function AccountScreen() {
                       : "Verification pending"}
                 </Text>
               </View>
-              {driverRejectReason !== "" && (
+              {driverRejectReason && driverRejectReason !== "" && (
                 <Text variant="bodyMedium" style={{ color: colors.error }}>
                   Reason: {driverRejectReason}
                 </Text>
