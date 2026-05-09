@@ -257,7 +257,11 @@ export default function AccountScreen() {
         if (newLicencePhoto) {
           const { error: verificationUpdateError } = await supabase
             .from("driver_verification")
-            .update({ status: "resubmitted", rejection_reason: "" })
+            .update({
+              status: "resubmitted",
+              rejection_reason: "",
+              updated_at: new Date().toISOString(),
+            })
             .eq("driver_id", user.id);
           if (verificationUpdateError) throw verificationUpdateError;
         }

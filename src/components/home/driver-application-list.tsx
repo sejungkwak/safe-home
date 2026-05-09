@@ -12,7 +12,7 @@ type DriverApplication = {
   driverId: string;
   name: string;
   email: string;
-  created_at: string;
+  updated_at: string;
   licenceUrl: string | null;
 };
 
@@ -30,7 +30,7 @@ export default function DriverApplicationList() {
     const { data, error } = await supabase
       .from("driver_verification")
       .select(
-        "id, created_at, driver_id, profile:driver_id(name, email, driving_licence)",
+        "id, updated_at, driver_id, profile:driver_id(name, email, driving_licence)",
       )
       .in("status", ["pending", "resubmitted"]);
 
@@ -54,7 +54,7 @@ export default function DriverApplicationList() {
         }
 
         const { formattedDate, formattedTime } = formatDate(
-          new Date(row.created_at),
+          new Date(row.updated_at),
         );
 
         setReason("");
@@ -64,7 +64,7 @@ export default function DriverApplicationList() {
           driverId: row.driver_id,
           name: profile.name,
           email: profile.email,
-          created_at: `${formattedDate} ${formattedTime}`,
+          updated_at: `${formattedDate} ${formattedTime}`,
           licenceUrl,
         };
       }),
@@ -177,7 +177,7 @@ export default function DriverApplicationList() {
             <Text variant="bodyMedium" style={{ marginBottom: 4 }}>
               {driver.email}
             </Text>
-            <Text variant="bodyMedium">Submitted on {driver.created_at}</Text>
+            <Text variant="bodyMedium">Submitted on {driver.updated_at}</Text>
           </Card.Content>
 
           {driver.licenceUrl && (
