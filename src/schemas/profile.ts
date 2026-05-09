@@ -8,7 +8,7 @@ export const profileSchema = z
       .string()
       .min(2, { message: "Name must be at least 2 characters." })
       .max(30, { message: "Name must be at most 30 characters." }),
-    phone: z.string().min(8),
+    phone: z.string().min(8, { message: "Invalid mobile number." }),
     email: z.union([
       z.literal(""),
       z.email({ message: "The email you entered is invalid." }),
