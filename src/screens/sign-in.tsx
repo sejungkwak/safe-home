@@ -11,7 +11,7 @@ import HorizontalLine from "@/components/ui/horizontal-line";
 import InputField from "@/components/ui/input-field";
 import PrimaryButton from "@/components/ui/primary-button";
 import ScreenContainer from "@/components/ui/screen-container";
-import { supabase } from "@/lib/supabase";
+import { useSession } from "@/context/auth";
 import { signinData, signinSchema } from "@/schemas/sign-in";
 
 /**
@@ -20,6 +20,7 @@ import { signinData, signinSchema } from "@/schemas/sign-in";
  */
 function SigninScreen() {
   const { colors } = useTheme();
+  const { signIn } = useSession();
 
   const {
     handleSubmit,
@@ -31,12 +32,9 @@ function SigninScreen() {
   });
 
   async function onSubmit(values: signinData) {
-    const { error } = await supabase.auth.signInWithPassword({
-      email: values.email,
-      password: values.password,
-    });
+    const error = await signIn!(values.email, values.password);
     if (error) {
-      Alert.alert(error.message);
+      Alert.alert(error);
     }
   }
 
