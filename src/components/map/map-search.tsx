@@ -1,5 +1,4 @@
 import { BottomSheetTextInput } from "@gorhom/bottom-sheet";
-import { cssInterop } from "nativewind";
 import React, { useEffect, useRef } from "react";
 import { View } from "react-native";
 import {
@@ -7,8 +6,6 @@ import {
   GooglePlacesAutocompleteRef,
 } from "react-native-google-places-autocomplete";
 import { Icon, useTheme } from "react-native-paper";
-
-cssInterop(View, { className: { target: "style" } });
 
 /**
  * A Google Places address search input component.
