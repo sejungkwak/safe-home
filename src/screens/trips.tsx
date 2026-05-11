@@ -86,12 +86,6 @@ function TripsScreen() {
 
     const data = await fetchTrip(`${role}_id`, user.id, false);
 
-    const validList = data.filter((row) => {
-      const startTime = new Date(row.start_time).getTime();
-      const now = Date.now();
-      return startTime >= now - 30 * 60 * 1000;
-    });
-
     function formatStartDate(startDate: string) {
       const { formattedDate, formattedTime } = formatDate(
         startDate ? new Date(startDate) : undefined,
@@ -101,7 +95,7 @@ function TripsScreen() {
 
     // start time is in the future, and not cancelled trips
     setUpcomingTrips(
-      validList
+      data
         .filter(
           (trip) =>
             trip.status === "pending" ||
@@ -112,9 +106,9 @@ function TripsScreen() {
         .map((trip) => ({ ...trip, ...formatStartDate(trip.start_time) })),
     );
 
-    // start time is in the past, or cancelled trips
+    // completed, expired, or cancelled trips
     setPastTrips(
-      validList
+      data
         .filter(
           (trip) =>
             trip.status === "completed" ||
