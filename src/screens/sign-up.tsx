@@ -314,6 +314,17 @@ function SignUpScreen() {
                       <Button
                         icon="file-upload"
                         mode="outlined"
+                        style={{
+                          borderWidth: 2,
+                          borderColor: !!errors.drivingLicence
+                            ? colors.error
+                            : colors.outline,
+                        }}
+                        textColor={
+                          !!errors.drivingLicence
+                            ? colors.outline
+                            : colors.primary
+                        }
                         onPress={() => {
                           onSelectImage("drivingLicence");
                         }}
@@ -345,6 +356,17 @@ function SignUpScreen() {
                       <Button
                         icon="file-upload"
                         mode="outlined"
+                        style={{
+                          borderWidth: 2,
+                          borderColor: !!errors.profilePhoto
+                            ? colors.error
+                            : colors.outline,
+                        }}
+                        textColor={
+                          !!errors.profilePhoto
+                            ? colors.outline
+                            : colors.primary
+                        }
                         onPress={() => {
                           onSelectImage("profilePhoto");
                         }}
