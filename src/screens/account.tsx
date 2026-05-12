@@ -286,8 +286,17 @@ export default function AccountScreen() {
       setValue("confirmResetPassword", "");
       setNewProfilePhoto(null);
       setNewLicencePhoto(null);
+
+      if (isNewEmail) {
+        Alert.alert(
+          "Email verification needed",
+          "Please check your inbox for email verification.",
+        );
+      } else {
+        Alert.alert("Success", "Profile updated successfully.");
+      }
+
       await loadProfile();
-      Alert.alert("Success", "Profile updated successfully.");
     } catch (error) {
       if (error instanceof Error) Alert.alert("Error", error.message);
     }
