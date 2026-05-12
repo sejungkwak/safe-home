@@ -284,15 +284,7 @@ export default function TripDetails() {
    * and create a new entry in notification table to send notification to other drivers.
    */
   async function handleDriverCancel() {
-    if (
-      !riderId ||
-      !driverId ||
-      !riderPushToken ||
-      !origin ||
-      !destination ||
-      !dateTime
-    )
-      return;
+    if (!riderId || !driverId || !origin || !destination || !dateTime) return;
 
     const updatedData = await updateTrip(id, "driver_cancelled", driverId);
 
@@ -317,18 +309,20 @@ export default function TripDetails() {
 
     const newTripId = data.id;
 
-    // send a notification to the rider and other drivers
-    await createNotification({
-      riderId: riderId,
-      driverId: driverId,
-      pushToken: riderPushToken,
-      origin: origin,
-      destination: destination,
-      dateTime: dateTime,
-      notificationType: "driver_cancelled",
-      tripId: newTripId,
-      fare: fare,
-    });
+    if (riderPushToken) {
+      // send a notification to the rider and other drivers
+      await createNotification({
+        riderId: riderId,
+        driverId: driverId,
+        pushToken: riderPushToken,
+        origin: origin,
+        destination: destination,
+        dateTime: dateTime,
+        notificationType: "driver_cancelled",
+        tripId: newTripId,
+        fare: fare,
+      });
+    }
 
     setShowCancelModal(true);
   }
@@ -349,13 +343,13 @@ export default function TripDetails() {
 
     setShowCancelModal(true);
 
-    if (!driverId) return;
+    if (!riderId || !driverId || !driverPushToken) return;
 
     // create a new notification data entry
     await createNotification({
-      riderId: riderId ?? "",
-      driverId: driverId ?? "",
-      pushToken: driverPushToken ?? "",
+      riderId: riderId,
+      driverId: driverId,
+      pushToken: driverPushToken,
       origin: origin,
       destination: destination,
       dateTime: dateTime,
