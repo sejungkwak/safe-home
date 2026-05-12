@@ -24,11 +24,17 @@ export const signupSchema = z
     confirmPassword: z.string(),
     drivingLicence: z
       .any()
+      .refine((file) => file && file?.size > 0, {
+        message: "Driving licence photo is required.",
+      })
       .refine((file) => !file || file?.size <= MAX_FILE_SIZE, {
         message: "Image must be under 5MB.",
       }),
     profilePhoto: z
       .any()
+      .refine((file) => file && file?.size > 0, {
+        message: "Profile photo is required.",
+      })
       .refine((file) => !file || file?.size <= MAX_FILE_SIZE, {
         message: "Image must be under 5MB.",
       }),
