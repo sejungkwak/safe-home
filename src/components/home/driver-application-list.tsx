@@ -23,7 +23,7 @@ type DriverApplication = {
  */
 export default function DriverApplicationList() {
   const [applications, setApplications] = useState<DriverApplication[]>([]);
-  const [reason, setReason] = useState<string>("");
+  const [reasons, setReasons] = useState<Record<string, string>>({});
 
   // retrieve pending or resubmitted applications
   const getNewApplications = useCallback(async () => {
@@ -56,8 +56,6 @@ export default function DriverApplicationList() {
         const { formattedDate, formattedTime } = formatDate(
           new Date(row.updated_at),
         );
-
-        setReason("");
 
         return {
           id: row.id,
@@ -101,7 +99,8 @@ export default function DriverApplicationList() {
   // handle Reject button press
   // update reason and status columns on driver_verification table
   async function handleReject(id: string, driverId: string) {
-    if (reason === "" || !reason) {
+    const reason = reasons[id];
+    if (!reason) {
       return Alert.alert("Please enter a reason for rejection.");
     }
 
@@ -122,10 +121,15 @@ export default function DriverApplicationList() {
         driverId,
         pushToken: profile.expo_push_token,
         notificationType: "rejected",
-        reason: reason,
+        reason,
       });
     }
 
+    setReasons((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
     setApplications(
       applications.filter((application) => application.id !== id),
     );
@@ -191,8 +195,10 @@ export default function DriverApplicationList() {
             <TextInput
               mode="outlined"
               placeholder="Reason for rejection"
-              value={reason}
-              onChangeText={(text) => setReason(text)}
+              value={reasons[driver.id] ?? ""}
+              onChangeText={(text) =>
+                setReasons((prev) => ({ ...prev, [driver.id]: text }))
+              }
             />
           </Card.Content>
           <Card.Actions>
