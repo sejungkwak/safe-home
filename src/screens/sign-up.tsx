@@ -118,6 +118,22 @@ function SignUpScreen() {
       profilePhotoUrl = await uploadImage(values.profilePhoto, "profiles");
     }
 
+    // check if the entered email exists in the database
+    const { data: emailData } = await supabase
+      .from("profile")
+      .select("*")
+      .eq("email", values.email)
+      .single();
+
+    // if the entered email exists, display an error and return
+    if (emailData) {
+      Alert.alert(
+        "Signup failed",
+        "An account with this email address already exists.",
+      );
+      return;
+    }
+
     // register a new user with Supabase Auth
     const { data, error } = await supabase.auth.signUp({
       email: values.email,
