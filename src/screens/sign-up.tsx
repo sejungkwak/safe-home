@@ -413,12 +413,16 @@ function SignUpScreen() {
             Sign Up
           </PrimaryButton>
         </View>
-        <View className="flex-row items-center gap-2 my-4">
-          <HorizontalLine />
-          <Text>or</Text>
-          <HorizontalLine />
-        </View>
-        <GoogleSignIn />
+        {userType === "rider" && (
+          <>
+            <View className="flex-row items-center gap-2 my-4">
+              <HorizontalLine />
+              <Text>or</Text>
+              <HorizontalLine />
+            </View>
+            <GoogleSignIn />
+          </>
+        )}
 
         <View className="flex-row justify-center gap-2 mt-8">
           <Text variant="bodyLarge">Already have an account?</Text>
